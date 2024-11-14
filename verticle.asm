@@ -15,7 +15,7 @@ vertical1:
  
 li $t8, 21
 li $t9, 0
-add $t2, $t0, 848 # 6 * 32 * 4 + 19 * 4 to reach (19, 6)
+add $t2, $t0, 848 # 6 * 32 * 4 + 20 * 4 to reach (20, 6)
 vertical2:
     sw $t1, 0( $t2 )
     addi $t2, $t2, 128
