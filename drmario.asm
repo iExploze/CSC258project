@@ -35,10 +35,6 @@ BLOCK_COL:   .word 12          # Initial column of the block's top-left corner
 BLOCK_DIR:   .word 0           # Direction: 0 = horizontal (2x1), 1 = vertical (1x2), 3 4 are opposites of 1 and 2
 COLOR1:   .word 0xFF0000           # the color of the block1
 COLOR2:   .word 0xffff0f            # the color of the block 2
-NO_ROTATE: .byte 0           #disallow rotation, default 0 for false 1 for true
-NO_LEFT: .byte 0           #disallow goingleft, default 0 for false 1 for true
-NO_RIGHT: .byte 0           #disallow goingright, default 0 for false 1 for true
-NO_DOWN: .byte 0           #disallow goingdown, default 0 for false 1 for true
 
 
 
@@ -62,9 +58,6 @@ game_loop:
     # the keyboard also clears the entire screen since thats when the udpate happens
     # 2a, 2b Check for collisions and also update the locations of the capsules
     # first load the bitmap into the stack
-    j check_collision
-    done_collision_check:
-    
 	beq $t2, 1, keyboard_input # If $t2 == 1 (key pressed), branch to keyboard_input
 	# 3. Draw the screen
 	jal draw_all
@@ -249,65 +242,6 @@ done_second_block: # flag for skipping to
     
 jr $ra
 
-check_collision:
-
-# logic for checking collision:
-# when checking we first check for the orientation,
-# no rotation of any kind while on collision is on
-# for 0 we have 4 blocks
-# for 1 we have 5 blocks
-# for 2 we have 4 blocks
-# for 3 we have 5 blocks
-# Load BLOCK_ROW and BLOCK_COL
-lw $t1, BLOCK_ROW          # Load BLOCK_ROW into $t1
-lw $t2, BLOCK_COL          # Load BLOCK_COL into $t2
-lw $t0, ADDR_DSPL        # Load the base address of the bitmap into $t0
-
-# Calculate row offset (BLOCK_ROW * 128)
-sll $t3, $t1, 7            # $t3 = BLOCK_ROW * 128 (shift left by 7)
-
-# Calculate column offset (BLOCK_COL * 4)
-sll $t5, $t2, 2            # $t5 = BLOCK_COL * 4 (shift left by 2)
-
-# Add row offset and column offset
-add $t4, $t3, $t5          # $t4 = row offset + column offset
-
-# Add the base address of the bitmap
-add $t4, $t4, $t0          # $t4 = base address + total offset
-
-# to start we need to load in the orientation of the block
-lw $t2, BLOCK_DIR          # Load the value of BLOCK_DIR into $t0
-li $t1, 0                  # Load 0 into $t1 (for comparison)
-beq $t2, $t1, orientation0 # If BLOCK_DIR == 0, go to orientation0
-li $t1, 1                  # Load 1 into $t1
-beq $t2, $t1, orientation1 # If BLOCK_DIR == 1, go to orientation1
-li $t1, 2                  # Load 2 into $t1
-beq $t2, $t1, orientation2 # If BLOCK_DIR == 2, go to orientation2
-li $t1, 3                  # Load 3 into $t1
-beq $t2, $t1, orientation3 # If BLOCK_DIR == 3, go to orientation3
-
-
-orientation0:
-    lw $t6, -4($t4)          # Load the value at $t4 - 4 into $t6
-    
-    lw $t6, 128($t4)         # Load the value at $t4 + 128 into $t7
-    lw $t6, 132($t4)         # Load the value at $t4 + 128 + 4 into $t8
-    lw $t6, 8($t4)           # Load the value at $t4 + 8 into $t9
-    
-j done_check
-
-orientation1:
-
-
-orientation2:
-
-
-orientation3:
-
-done_check:
-
-j done_collision_check
-
 clear_screen:
     lw $t0, ADDR_DSPL          # Load the base address of the display
     li $t1, 0x000000           # Black color (clear screen color)
@@ -361,11 +295,84 @@ skip_reset:
     j keyboard_input_exits     # Return to game loop
 
 move_down:
-    # Move the block down by incrementing the row
-    lw $t1, BLOCK_ROW           # Load current row
+    # Step 1: Load current row, column, and orientation into $t1, $t2, and $t3
+    lw $t1, BLOCK_ROW           # $t1 = BLOCK_ROW
+    lw $t2, BLOCK_DIR           # $t2 = BLOCK_DIR
+    lw $t3, BLOCK_COL           # $t3 = BLOCK_COL
+    li $t4, 0x00000000
+    lw $t0, ADDR_DSPL           # $t0 = ADDR_DSPL (base address of bitmap)
+    
+    sll $t6, $t1, 7             # $t6 = BLOCK_ROW * 128 (shift $t1 left by 7)
+    sll $t7, $t3, 2             # $t7 = BLOCK_COL * 4 (shift $t3 left by 2)
+    add $t6, $t6, $t7           # $t6 = row offset + column offset
+    add $t6, $t6, $t0           # $t6 = $t6 + base address ($t0)
+
+
+    # Step 2: Check orientation
+    li $t5, 0                   # Load comparison value 0
+    beq $t2, $t5, orientation_0 # If BLOCK_DIR == 0, branch to orientation_0
+    li $t5, 1                   # Load comparison value 1
+    beq $t2, $t5, orientation_1 # If BLOCK_DIR == 1, branch to orientation_1
+    li $t5, 2                   # Load comparison value 2
+    beq $t2, $t5, orientation_2 # If BLOCK_DIR == 2, branch to orientation_2
+    li $t5, 3                   # Load comparison value 3
+    beq $t2, $t5, orientation_3 # If BLOCK_DIR == 3, branch to orientation_3
+    j skip_orientation_check    # Skip orientation-specific checks
+
+
+orientation_0:
+    # Orientation 0: Calculate the address
+    addi $t8, $t6, 128          # $straight underneath and one over
+    addi $t9, $t6, 132          
+    
+    lw $t5, 0($t8)
+    bne $t5, $t4, keyboard_input_exits
+    lw $t5, 0($t9)
+    bne $t5, $t4, keyboard_input_exits
+    
+    # Return to continue execution
+    j skip_orientation_check    # Skip to move_down logic
+
+
+orientation_1:
+    # Orientation 1: Calculate the address
+    addi $t9, $t6, 256          # $ 2 blocks under
+    
+    lw $t5, 0($t9)
+    bne $t5, $t4, keyboard_input_exits
+    
+    # Return to continue execution
+    j skip_orientation_check    # Skip to move_down logic
+
+orientation_2:
+    # Orientation 2: Calculate the address
+    addi $t8, $t6, 124          # $straight underneath and one left
+    addi $t9, $t6, 128          
+    
+    lw $t5, 0($t8)
+    bne $t5, $t4, keyboard_input_exits
+    lw $t5, 0($t9)
+    bne $t5, $t4, keyboard_input_exits
+    
+    # Return to continue execution
+    j skip_orientation_check    # Skip to move_down logic
+
+orientation_3:
+    # Orientation 3: Calculate the address
+    addi $t9, $t6, 128          # straight underneath
+    
+    lw $t5, 0($t9)
+    bne $t5, $t4, keyboard_input_exits
+    
+    # Return to continue execution
+    j skip_orientation_check    # Skip to move_down logic
+
+skip_orientation_check:
+    # Step 3: Move the block down
     addi $t1, $t1, 1            # Increment the row
     sw $t1, BLOCK_ROW           # Save the updated row
-    j keyboard_input_exits       # Return to game loop
+    j keyboard_input_exits      # Jump back to the keyboard input handling
+
 
 move_left:
     # Move the block left by decrementing the column
