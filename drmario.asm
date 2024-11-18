@@ -54,11 +54,13 @@ game_loop:
 	syscall
 	lw $t0, ADDR_KBRD         # Load the keyboard base address into $t0
 	# 1b. Check which key has been pressed
-	lw $t8, 0($t0)            # Read the first word (status) from the keyboard
-    beq $t8, 1, keyboard_input # If $t8 == 1 (key pressed), branch to keyboard_input
-    # 2a. Check for collisions
-	# 2b. Update locations (capsules)
-	
+	lw $t2, 0($t0)            # Read the first word (status) from the keyboard
+    # the keyboard also clears the entire screen since thats when the udpate happens
+    # 2a, 2b Check for collisions and also update the locations of the capsules
+    # first load the bitmap into the stack
+    #lw $t6 0($t5) # load the pixel value into $t6    
+    
+	beq $t2, 1, keyboard_input # If $t2 == 1 (key pressed), branch to keyboard_input
 	# 3. Draw the screen
 	jal draw_all
 	jal delay_16ms             # Wait for ~16ms to maintain 60 FPS
@@ -243,6 +245,10 @@ done_second_block: # flag for skipping to
     
 jr $ra
 
+check_collision:
+
+jr $ra
+
 clear_screen:
     lw $t0, ADDR_DSPL          # Load the base address of the display
     li $t1, 0x000000           # Black color (clear screen color)
@@ -294,35 +300,35 @@ keyboard_input_exits:
     j game_loop                 # Return to game loop if no valid key is pressed
     
 rotate:
-    lw $t5, BLOCK_DIR           # Load current direction
-    addi $t5, $t5, 1            # increment by 1
-    blt $t5, 4, skip_reset      # if $t5 < 4, skip reseting to 0
+    lw $t1, BLOCK_DIR           # Load current direction
+    addi $t1, $t1, 1            # increment by 1
+    blt $t1, 4, skip_reset      # if $t5 < 4, skip reseting to 0
     
-    li $t5, 0                   # reseting back to 0
+    li $t1, 0                   # reseting back to 0
 skip_reset:
-    sw $t5, BLOCK_DIR           # save if to BLOCK_DIR
+    sw $t1, BLOCK_DIR           # save if to BLOCK_DIR
     
     j keyboard_input_exits     # Return to game loop
 
 move_down:
     # Move the block down by incrementing the row
-    lw $t3, BLOCK_ROW           # Load current row
-    addi $t3, $t3, 1            # Increment the row
-    sw $t3, BLOCK_ROW           # Save the updated row
+    lw $t1, BLOCK_ROW           # Load current row
+    addi $t1, $t1, 1            # Increment the row
+    sw $t1, BLOCK_ROW           # Save the updated row
     j keyboard_input_exits       # Return to game loop
 
 move_left:
     # Move the block left by decrementing the column
-    lw $t4, BLOCK_COL           # Load current column
-    subi $t4, $t4, 1            # Decrement the column
-    sw $t4, BLOCK_COL           # Save the updated column
+    lw $t1, BLOCK_COL           # Load current column
+    subi $t1, $t1, 1            # Decrement the column
+    sw $t1, BLOCK_COL           # Save the updated column
     j keyboard_input_exits     # Return to game loop
 
 move_right:
     # Move the block right by incrementing the column
-    lw $t4, BLOCK_COL           # Load current column
-    addi $t4, $t4, 1            # Increment the column
-    sw $t4, BLOCK_COL           # Save the updated column
+    lw $t1, BLOCK_COL           # Load current column
+    addi $t1, $t1, 1            # Increment the column
+    sw $t1, BLOCK_COL           # Save the updated column
     j keyboard_input_exits     # Return to game loop
     
 quit:
