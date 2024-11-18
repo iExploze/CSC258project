@@ -35,6 +35,10 @@ BLOCK_COL:   .word 12          # Initial column of the block's top-left corner
 BLOCK_DIR:   .word 0           # Direction: 0 = horizontal (2x1), 1 = vertical (1x2), 3 4 are opposites of 1 and 2
 COLOR1:   .word 0xFF0000           # the color of the block1
 COLOR2:   .word 0xffff0f            # the color of the block 2
+NO_ROTATE: .byte 0           #disallow rotation, default 0 for false 1 for true
+NO_LEFT: .byte 0           #disallow goingleft, default 0 for false 1 for true
+NO_RIGHT: .byte 0           #disallow goingright, default 0 for false 1 for true
+NO_DOWN: .byte 0           #disallow goingdown, default 0 for false 1 for true
 
 
 
@@ -58,12 +62,12 @@ game_loop:
     # the keyboard also clears the entire screen since thats when the udpate happens
     # 2a, 2b Check for collisions and also update the locations of the capsules
     # first load the bitmap into the stack
-    #lw $t6 0($t5) # load the pixel value into $t6    
+    j check_collision
+    done_collision_check:
     
 	beq $t2, 1, keyboard_input # If $t2 == 1 (key pressed), branch to keyboard_input
 	# 3. Draw the screen
 	jal draw_all
-	jal delay_16ms             # Wait for ~16ms to maintain 60 FPS
 	
 	# 4. Sleep
 
@@ -247,7 +251,62 @@ jr $ra
 
 check_collision:
 
-jr $ra
+# logic for checking collision:
+# when checking we first check for the orientation,
+# no rotation of any kind while on collision is on
+# for 0 we have 4 blocks
+# for 1 we have 5 blocks
+# for 2 we have 4 blocks
+# for 3 we have 5 blocks
+# Load BLOCK_ROW and BLOCK_COL
+lw $t1, BLOCK_ROW          # Load BLOCK_ROW into $t1
+lw $t2, BLOCK_COL          # Load BLOCK_COL into $t2
+lw $t0, ADDR_DSPL        # Load the base address of the bitmap into $t0
+
+# Calculate row offset (BLOCK_ROW * 128)
+sll $t3, $t1, 7            # $t3 = BLOCK_ROW * 128 (shift left by 7)
+
+# Calculate column offset (BLOCK_COL * 4)
+sll $t5, $t2, 2            # $t5 = BLOCK_COL * 4 (shift left by 2)
+
+# Add row offset and column offset
+add $t4, $t3, $t5          # $t4 = row offset + column offset
+
+# Add the base address of the bitmap
+add $t4, $t4, $t0          # $t4 = base address + total offset
+
+# to start we need to load in the orientation of the block
+lw $t2, BLOCK_DIR          # Load the value of BLOCK_DIR into $t0
+li $t1, 0                  # Load 0 into $t1 (for comparison)
+beq $t2, $t1, orientation0 # If BLOCK_DIR == 0, go to orientation0
+li $t1, 1                  # Load 1 into $t1
+beq $t2, $t1, orientation1 # If BLOCK_DIR == 1, go to orientation1
+li $t1, 2                  # Load 2 into $t1
+beq $t2, $t1, orientation2 # If BLOCK_DIR == 2, go to orientation2
+li $t1, 3                  # Load 3 into $t1
+beq $t2, $t1, orientation3 # If BLOCK_DIR == 3, go to orientation3
+
+
+orientation0:
+    lw $t6, -4($t4)          # Load the value at $t4 - 4 into $t6
+    
+    lw $t6, 128($t4)         # Load the value at $t4 + 128 into $t7
+    lw $t6, 132($t4)         # Load the value at $t4 + 128 + 4 into $t8
+    lw $t6, 8($t4)           # Load the value at $t4 + 8 into $t9
+    
+j done_check
+
+orientation1:
+
+
+orientation2:
+
+
+orientation3:
+
+done_check:
+
+j done_collision_check
 
 clear_screen:
     lw $t0, ADDR_DSPL          # Load the base address of the display
@@ -272,15 +331,6 @@ clear_column:
     addi $t3, $t3, 1           # Increment row counter
     bne $t3, $t4, clear_row    # Repeat until all rows are cleared
 
-    jr $ra                     # Return to caller
-
-
-# Delay Function (~16ms for 60 FPS)
-delay_16ms:
-    li $t0, 1000000            # Approximate iterations for ~16ms delay
-delay_loop:
-    addi $t0, $t0, -1          # Decrement the counter
-    bnez $t0, delay_loop       # Loop until the counter reaches 0
     jr $ra                     # Return to caller
     
 keyboard_input:
