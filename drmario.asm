@@ -152,9 +152,26 @@ vertical2:
     addi $t2, $t2, 128
     addi $t9, $t9, 1
     bne $t9, $t8, vertical2
+    
+keyboard_input:
+    # Get the ASCII code of the pressed key
+    lw $a0, 4($t0)             # Load the ASCII code from the keyboard
+
+    # Print the pressed key
+    li $v0, 11                 # Syscall to print a character
+    syscall                    # Print the ASCII character in $a0
 
 game_loop:
-    # 1a. Check if key has been pressed
+    # Step 1a: Check if key has been pressed
+    li $v0, 32                # Syscall code for printing an integer in binary
+	li $a0, 1                 # Pass the integer 1 to print in binary
+	syscall
+	
+	lw $t0, ADDR_KBRD         # Load the keyboard base address into $t0
+    lw $t8, 0($t0)            # Read the first word (status) from the keyboard
+    beq $t8, 1, keyboard_input # If $t8 == 1 (key pressed), branch to keyboard_input
+	   
+	
     # 1b. Check which key has been pressed
     # 2a. Check for collisions
 	# 2b. Update locations (capsules)
