@@ -310,17 +310,16 @@ move_down:
 
     # Step 2: Check orientation
     li $t5, 0                   # Load comparison value 0
-    beq $t2, $t5, orientation_0 # If BLOCK_DIR == 0, branch to orientation_0
+    beq $t2, $t5, orientationD_0 # If BLOCK_DIR == 0, branch to orientation_0
     li $t5, 1                   # Load comparison value 1
-    beq $t2, $t5, orientation_1 # If BLOCK_DIR == 1, branch to orientation_1
+    beq $t2, $t5, orientationD_1 # If BLOCK_DIR == 1, branch to orientation_1
     li $t5, 2                   # Load comparison value 2
-    beq $t2, $t5, orientation_2 # If BLOCK_DIR == 2, branch to orientation_2
+    beq $t2, $t5, orientationD_2 # If BLOCK_DIR == 2, branch to orientation_2
     li $t5, 3                   # Load comparison value 3
-    beq $t2, $t5, orientation_3 # If BLOCK_DIR == 3, branch to orientation_3
-    j skip_orientation_check    # Skip orientation-specific checks
+    beq $t2, $t5, orientationD_3 # If BLOCK_DIR == 3, branch to orientation_3
 
 
-orientation_0:
+orientationD_0:
     # Orientation 0: Calculate the address
     addi $t8, $t6, 128          # $straight underneath and one over
     addi $t9, $t6, 132          
@@ -331,10 +330,10 @@ orientation_0:
     bne $t5, $t4, keyboard_input_exits
     
     # Return to continue execution
-    j skip_orientation_check    # Skip to move_down logic
+    j skip_orientationD_check    # Skip to move_down logic
 
 
-orientation_1:
+orientationD_1:
     # Orientation 1: Calculate the address
     addi $t9, $t6, 256          # $ 2 blocks under
     
@@ -342,9 +341,9 @@ orientation_1:
     bne $t5, $t4, keyboard_input_exits
     
     # Return to continue execution
-    j skip_orientation_check    # Skip to move_down logic
+    j skip_orientationD_check    # Skip to move_down logic
 
-orientation_2:
+orientationD_2:
     # Orientation 2: Calculate the address
     addi $t8, $t6, 124          # $straight underneath and one left
     addi $t9, $t6, 128          
@@ -355,9 +354,9 @@ orientation_2:
     bne $t5, $t4, keyboard_input_exits
     
     # Return to continue execution
-    j skip_orientation_check    # Skip to move_down logic
+    j skip_orientationD_check    # Skip to move_down logic
 
-orientation_3:
+orientationD_3:
     # Orientation 3: Calculate the address
     addi $t9, $t6, 128          # straight underneath
     
@@ -365,9 +364,9 @@ orientation_3:
     bne $t5, $t4, keyboard_input_exits
     
     # Return to continue execution
-    j skip_orientation_check    # Skip to move_down logic
+    j skip_orientationD_check    # Skip to move_down logic
 
-skip_orientation_check:
+skip_orientationD_check:
     # Step 3: Move the block down
     addi $t1, $t1, 1            # Increment the row
     sw $t1, BLOCK_ROW           # Save the updated row
@@ -375,14 +374,158 @@ skip_orientation_check:
 
 
 move_left:
-    # Move the block left by decrementing the column
+    # Step 1: Load current row, column, and orientation into $t1, $t2, and $t3
+    lw $t1, BLOCK_ROW           # $t1 = BLOCK_ROW
+    lw $t2, BLOCK_DIR           # $t2 = BLOCK_DIR
+    lw $t3, BLOCK_COL           # $t3 = BLOCK_COL
+    li $t4, 0x00000000
+    lw $t0, ADDR_DSPL           # $t0 = ADDR_DSPL (base address of bitmap)
+    
+    sll $t6, $t1, 7             # $t6 = BLOCK_ROW * 128 (shift $t1 left by 7)
+    sll $t7, $t3, 2             # $t7 = BLOCK_COL * 4 (shift $t3 left by 2)
+    add $t6, $t6, $t7           # $t6 = row offset + column offset
+    add $t6, $t6, $t0           # $t6 = $t6 + base address ($t0)
+
+
+    # Step 2: Check orientation
+    li $t5, 0                   # Load comparison value 0
+    beq $t2, $t5, orientationL_0 # If BLOCK_DIR == 0, branch to orientation_0
+    li $t5, 1                   # Load comparison value 1
+    beq $t2, $t5, orientationL_1 # If BLOCK_DIR == 1, branch to orientation_1
+    li $t5, 2                   # Load comparison value 2
+    beq $t2, $t5, orientationL_2 # If BLOCK_DIR == 2, branch to orientation_2
+    li $t5, 3                   # Load comparison value 3
+    beq $t2, $t5, orientationL_3 # If BLOCK_DIR == 3, branch to orientation_3
+
+
+orientationL_0:
+    # Orientation 0: Calculate the address         
+    subi $t9, $t6, 4          # one to the left
+    
+    lw $t5, 0($t9)
+    bne $t5, $t4, keyboard_input_exits
+    
+    # Return to continue execution
+    j skip_orientationL_check    # Skip to move_down logic
+
+
+orientationL_1:
+    # Orientation 1: Calculate the address
+    subi $t8, $t6, 4          # one to the left
+    addi $t9, $t6, 124         # one underneath and one left
+    
+    lw $t5, 0($t8)
+    bne $t5, $t4, keyboard_input_exits
+    lw $t5, 0($t9)
+    bne $t5, $t4, keyboard_input_exits
+    
+    # Return to continue execution
+    j skip_orientationL_check    # Skip to move_down logic
+
+orientationL_2:
+    # Orientation 2: Calculate the address
+    subi $t9, $t6, 8          # two to the left
+    
+    lw $t5, 0($t9)
+    bne $t5, $t4, keyboard_input_exits
+    
+    # Return to continue execution
+    j skip_orientationL_check    # Skip to move_down logic
+
+orientationL_3:
+    # Orientation 3: Calculate the address
+    subi $t8, $t6, 4          # one to the left
+    subi $t9, $t6, 124         # one above and one left
+    
+    lw $t5, 0($t8)
+    bne $t5, $t4, keyboard_input_exits
+    lw $t5, 0($t9)
+    bne $t5, $t4, keyboard_input_exits
+    
+    # Return to continue execution
+    j skip_orientationL_check    # Skip to move_down logic
+
+skip_orientationL_check:
+    # Step 3: Move the block down
     lw $t1, BLOCK_COL           # Load current column
-    subi $t1, $t1, 1            # Decrement the column
+    subi $t1, $t1, 1            # Increment the column
     sw $t1, BLOCK_COL           # Save the updated column
     j keyboard_input_exits     # Return to game loop
 
 move_right:
-    # Move the block right by incrementing the column
+    # Step 1: Load current row, column, and orientation into $t1, $t2, and $t3
+    lw $t1, BLOCK_ROW           # $t1 = BLOCK_ROW
+    lw $t2, BLOCK_DIR           # $t2 = BLOCK_DIR
+    lw $t3, BLOCK_COL           # $t3 = BLOCK_COL
+    li $t4, 0x00000000
+    lw $t0, ADDR_DSPL           # $t0 = ADDR_DSPL (base address of bitmap)
+    
+    sll $t6, $t1, 7             # $t6 = BLOCK_ROW * 128 (shift $t1 left by 7)
+    sll $t7, $t3, 2             # $t7 = BLOCK_COL * 4 (shift $t3 left by 2)
+    add $t6, $t6, $t7           # $t6 = row offset + column offset
+    add $t6, $t6, $t0           # $t6 = $t6 + base address ($t0)
+
+
+    # Step 2: Check orientation
+    li $t5, 0                   # Load comparison value 0
+    beq $t2, $t5, orientationR_0 # If BLOCK_DIR == 0, branch to orientation_0
+    li $t5, 1                   # Load comparison value 1
+    beq $t2, $t5, orientationR_1 # If BLOCK_DIR == 1, branch to orientation_1
+    li $t5, 2                   # Load comparison value 2
+    beq $t2, $t5, orientationR_2 # If BLOCK_DIR == 2, branch to orientation_2
+    li $t5, 3                   # Load comparison value 3
+    beq $t2, $t5, orientationR_3 # If BLOCK_DIR == 3, branch to orientation_3
+
+
+orientationR_0:
+    # Orientation 0: Calculate the address         
+    addi $t9, $t6, 8          # two to the right
+    
+    lw $t5, 0($t9)
+    bne $t5, $t4, keyboard_input_exits
+    
+    # Return to continue execution
+    j skip_orientationR_check    # Skip to move_down logic
+
+
+orientationR_1:
+    # Orientation 1: Calculate the address
+    addi $t8, $t6, 4          # one to the right
+    addi $t9, $t6, 132         # one underneath and one rught
+    
+    lw $t5, 0($t8)
+    bne $t5, $t4, keyboard_input_exits
+    lw $t5, 0($t9)
+    bne $t5, $t4, keyboard_input_exits
+    
+    # Return to continue execution
+    j skip_orientationR_check    # Skip to move_down logic
+
+orientationR_2:
+    # Orientation 2: Calculate the address
+    addi $t9, $t6, 4          # one to the right
+    
+    lw $t5, 0($t9)
+    bne $t5, $t4, keyboard_input_exits
+    
+    # Return to continue execution
+    j skip_orientationR_check    # Skip to move_down logic
+
+orientationR_3:
+    # Orientation 3: Calculate the address
+    addi $t8, $t6, 4          # one to the right
+    addi $t9, $t6, 124         # one above and one right
+    
+    lw $t5, 0($t8)
+    bne $t5, $t4, keyboard_input_exits
+    lw $t5, 0($t9)
+    bne $t5, $t4, keyboard_input_exits
+    
+    # Return to continue execution
+    j skip_orientationR_check    # Skip to move_down logic
+
+skip_orientationR_check:
+    # Step 3: Move the block down
     lw $t1, BLOCK_COL           # Load current column
     addi $t1, $t1, 1            # Increment the column
     sw $t1, BLOCK_COL           # Save the updated column
