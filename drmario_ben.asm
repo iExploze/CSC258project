@@ -165,7 +165,6 @@ vertical2:
     addi $t9, $t9, 1
     bne $t9, $t8, vertical2
 
-
 ##############################################################################
 # Draw random virus on the board
 ##############################################################################
@@ -194,7 +193,9 @@ random_virus:                       # get random position for virus (only the bo
     addi $t9, $t9, 1
     bne $t9, $t8, random_virus
     
-    
+##############################################################################
+# Generate the preview bolcks
+##############################################################################
 generate_pre_block:                     # Generate the color of the preview blocks and stored in pre_color_1 and pre_color_2
     jal get_random_color
     sw $t6, pre_color_1
@@ -214,7 +215,7 @@ draw_pre_block:                         # Draw the preview's block
     j game_loop
     
 ##############################################################################
-# Get a random color and store it into 
+# Get a random color and store it into $t6
 ##############################################################################
 get_random_color:                   # after calling this function a random color of red, yellow or blue would be store in $t6
     li $v0, 42
@@ -229,16 +230,39 @@ get_random_color:                   # after calling this function a random color
 
 color_red_case:  
     lw $t6, color_red               # store color red in $t6
-    jr $ra                          # 返回
+    jr $ra
 
 color_yellow_case:
     lw $t6, color_yellow            # store color yellow in $t6
-    jr $ra                          # 返回
+    jr $ra
 
 color_blue_case:
     lw $t6, color_blue              # store color blue in $t6
-    jr $ra                          # 返回
+    jr $ra
 
+##############################################################################
+# Check if the bottle entrance is blocked, and quit the game if true
+##############################################################################
+    lw $t2, 940 
+    lw $t3, 944
+    lw $t4, 948
+    lw $t5, 952
+    # These are the position of the four pixel at the bottle's entrance
+    li $zero, 0x0
+
+    bne $t2, $zero, quit
+
+    bne $t3, $zero, quit
+
+    bne $t4, $zero, quit
+
+    bne $t5, $zero, quit
+    
+    j game_loop
+
+quit:
+    li $v0, 10
+    syscall
 
 game_loop:
     # 1a. Check if key has been pressed
@@ -250,3 +274,4 @@ game_loop:
 
     # 5. Go back to Step 1
     j game_loop
+
