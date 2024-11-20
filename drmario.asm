@@ -465,9 +465,9 @@ orientationD_0:
     addi $t9, $t6, 132          
     
     lw $t5, 0($t8)
-    bne $t5, $t4, reset_block
+    bne $t5, $t4, check_4
     lw $t5, 0($t9)
-    bne $t5, $t4, reset_block
+    bne $t5, $t4, check_4
     
     # Return to continue execution
     j skip_orientationD_check    # Skip to move_down logic
@@ -478,7 +478,7 @@ orientationD_1:
     addi $t9, $t6, 256          # $ 2 blocks under
     
     lw $t5, 0($t9)
-    bne $t5, $t4, reset_block
+    bne $t5, $t4, check_4
     
     # Return to continue execution
     j skip_orientationD_check    # Skip to move_down logic
@@ -489,9 +489,9 @@ orientationD_2:
     addi $t9, $t6, 128          
     
     lw $t5, 0($t8)
-    bne $t5, $t4, reset_block
+    bne $t5, $t4, check_4
     lw $t5, 0($t9)
-    bne $t5, $t4, reset_block
+    bne $t5, $t4, check_4
     
     # Return to continue execution
     j skip_orientationD_check    # Skip to move_down logic
@@ -501,14 +501,14 @@ orientationD_3:
     addi $t9, $t6, 128          # straight underneath
     
     lw $t5, 0($t9)
-    bne $t5, $t4, reset_block
+    bne $t5, $t4, check_4
     
     # Return to continue execution
     j skip_orientationD_check    # Skip to move_down logic
     
 store_to_reg_true:
     li $t1, 1                      # Load the value 1 into $t0
-    la $t2, reset_block           # Load the address of STORETOSTACK into $t1
+    la $t2, check_4           # Load the address of STORETOSTACK into $t1
     sw $t1, 0($t2)                 # Store the value 1 at the address of STORETOSTACK
 
 skip_orientationD_check:
@@ -524,6 +524,73 @@ skip_orientationD_check:
 
     # Step 4: Return to keyboard input handling
     j keyboard_input_exits      # Jump back to the keyboard input handling
+    
+check_4:
+    
+# Load BLOCK_DIR into $t0
+    lw $t0, BLOCK_DIR          # Load the direction into $t0
+
+# Branch based on BLOCK_DIR value
+    li $t8, 0                  # Load 0 into $t8
+    beq $t0, $t8, checkdir0    # If BLOCK_DIR == 0, go to checkdir0
+
+    li $t8, 3                  # Load 3 into $t8
+    beq $t0, $t8, checkdir3    # If BLOCK_DIR == 3, go to checkdir3
+
+    # If BLOCK_DIR is not 0 or 3, do both checks
+    j do_both
+
+checkdir0:
+    # Perform checkdir0 logic
+    add $t1, $s0, $zero       # Load the value of $s0 into $t1
+    addi $t2, $t1, 128        # $t2 = $t1 + 128
+    addi $t3, $t2, 128        # $t3 = $t2 + 128
+    addi $t4, $t3, 128        # $t4 = $t3 + 128
+
+    lw $t5, 0($t1)            # Load the word at $t1 into $t5
+    lw $t6, 0($t2)            # Load the color at $t2 into $t6
+    bne $t6, $t5, checkdir3         # If $t6 != $t5, skip to end
+    lw $t6, 0($t3)            # Load the color at $t3 into $t6
+    bne $t6, $t5, checkdir3         # If $t6 != $t5, skip to end
+    lw $t6, 0($t4)            # Load the color at $t4 into $t6
+    bne $t6, $t5, checkdir3         # If $t6 != $t5, skip to end
+
+    # If all match, set to black
+    li $t7, 0                 # Load black color (value 0) into $t7
+    sw $t7, 0($t1)            # Store black at $t1
+    sw $t7, 0($t2)            # Store black at $t2
+    sw $t7, 0($t3)            # Store black at $t3
+    sw $t7, 0($t4)            # Store black at $t4
+    j checkdir3                     # Jump to end
+
+checkdir3:
+    # Perform checkdir3 logic
+    add $t1, $s1, $zero       # Load the value of $s1 into $t1
+    addi $t2, $t1, 128        # $t2 = $t1 + 128
+    addi $t3, $t2, 128        # $t3 = $t2 + 128
+    addi $t4, $t3, 128        # $t4 = $t3 + 128
+
+    lw $t5, 0($t1)            # Load the word at $t1 into $t5
+    lw $t6, 0($t2)            # Load the color at $t2 into $t6
+    bne $t6, $t5, end         # If $t6 != $t5, skip to end
+    lw $t6, 0($t3)            # Load the color at $t3 into $t6
+    bne $t6, $t5, end         # If $t6 != $t5, skip to end
+    lw $t6, 0($t4)            # Load the color at $t4 into $t6
+    bne $t6, $t5, end         # If $t6 != $t5, skip to end
+
+    # If all match, set to black
+    li $t7, 0                 # Load black color (value 0) into $t7
+    sw $t7, 0($t1)            # Store black at $t1
+    sw $t7, 0($t2)            # Store black at $t2
+    sw $t7, 0($t3)            # Store black at $t3
+    sw $t7, 0($t4)            # Store black at $t4
+    j end                     # Jump to end
+
+do_both:
+    # Perform checkdir0 logic
+    j checkdir0               # Jump to checkdir0 (it will continue to checkdir3 after end)
+
+end:
     
 reset_block:
 
