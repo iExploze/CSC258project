@@ -42,6 +42,13 @@ BLOCK_COL2: .word 13        # intial col of the second block
 COLOR1:   .word 0xFF0000           # the color of the block1
 COLOR2:   .word 0xFF0000            # the color of the block 2
 
+color_red:    
+    .word 0xFF0000
+color_yellow: 
+    .word 0xFFFF00
+color_blue:   
+    .word 0x0000FF
+
 STORETOSTACK: .word 0 # if we have to store to stack or not for the block default of 1 for false
 
 ##############################################################################
@@ -604,7 +611,55 @@ reset_block:
     sw $t1, BLOCK_ROW2
     li $t1, 13
     sw $t1, BLOCK_COL2
+    
+    li $v0, 42
+    li $a0, 0               # set minimum
+    li $a1, 3               # set maximum
+    syscall
+    # get a random number from [0,2] and store it in $a0
+    
+    beq $a0, 0, color_red_case      # If $a0 is 0, jump to color red case
+    beq $a0, 1, color_yellow_case   # If $a0 is 1, jump to color yellow case
+    beq $a0, 2, color_blue_case     # If $a0 is 2, jump to color blue case
+    
+    
+color_red_case:  
+    lw $t6, color_red               # store color red in $t6
+    j case_done
+color_yellow_case:
+    lw $t6, color_yellow            # store color yellow in $t6
+    j case_done
+color_blue_case:
+    lw $t6, color_blue              # store color blue in $t6
+    j case_done
+case_done:
+    sw $t6, COLOR1
+    
+    
+    li $v0, 42
+    li $a0, 0               # set minimum
+    li $a1, 3               # set maximum
+    syscall
+    # get a random number from [0,2] and store it in $a0
+    
+    beq $a0, 0, color_red_case2      # If $a0 is 0, jump to color red case
+    beq $a0, 1, color_yellow_case2   # If $a0 is 1, jump to color yellow case
+    beq $a0, 2, color_blue_case2     # If $a0 is 2, jump to color blue case
+    
+    
+color_red_case2:  
+    lw $t6, color_red               # store color red in $t6
+    j case_done2
+color_yellow_case2:
+    lw $t6, color_yellow            # store color yellow in $t6
+    j case_done2
+color_blue_case2:
+    lw $t6, color_blue              # store color blue in $t6
+    j case_done2
 
+case_done2:
+    sw $t6, COLOR2
+    
 jr $ra
 
    
