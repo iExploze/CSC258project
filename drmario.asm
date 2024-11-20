@@ -649,10 +649,10 @@ case_done:
     
 color_red_case2:  
     lw $t6, color_red               # store color red in $t6
-    j case_done
+    j case_done2
 color_yellow_case2:
     lw $t6, color_yellow            # store color yellow in $t6
-    j case_done
+    j case_done2
 color_blue_case2:
     lw $t6, color_blue              # store color blue in $t6
     j case_done2
