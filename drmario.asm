@@ -180,6 +180,55 @@ vertical2:
     addi $t2, $t2, 128
     addi $t9, $t9, 1
     bne $t9, $t8, vertical2
+
+##############################################################################
+# Draw random virus on the board
+##############################################################################
+li $t8, 4
+li $t9, 0
+random_virus:                       # get random position for virus (only the bottom half of the bottle)
+    addi $t2, $t0, 2196             # the first block of posible virus, which located at the top left of the bottom half of the bottle -> $t2
+    li $v0, 42
+    li $a0, 0                # set minimum
+    li $a1, 16               # set maximum
+    syscall                  # get a random number from [0,2] and store it in $a0
+    sll $t7, $a0, 2          # get a random position for roll (times 2^2 = 4)
+    
+    li $v0, 42
+    li $a0, 0                # set minimum
+    li $a1, 9                # set maximum
+    syscall                  # get a random number from [0,2] and store it in $a0
+    sll $t5, $a0, 7          # get a random position for column (times 2^7 = 128)
+    
+    add $t2, $t2, $t7        # update the position for column
+    add $t2, $t2, $t5        # update the position for column
+    
+    li $v0, 42
+    li $a0, 0               # set minimum
+    li $a1, 3               # set maximum
+    syscall
+    # get a random number from [0,2] and store it in $a0
+    
+    beq $a0, 0, color_red_case0      # If $a0 is 0, jump to color red case
+    beq $a0, 1, color_yellow_case0   # If $a0 is 1, jump to color yellow case
+    beq $a0, 2, color_blue_case0     # If $a0 is 2, jump to color blue case
+
+color_red_case0:  
+    lw $t6, color_red               # store color red in $t6
+    j case_done0
+
+color_yellow_case0:
+    lw $t6, color_yellow            # store color yellow in $t6
+    j case_done0
+color_blue_case0:
+    lw $t6, color_blue              # store color blue in $t6
+    j case_done0
+    
+case_done0:
+    sw $t6, 0( $t2 )
+    
+    addi $t9, $t9, 1
+    bne $t9, $t8, random_virus
     
 ##################################################################################################
 #above this is all the borders,  its a pile of shitcode now, dont touch                          #
@@ -551,21 +600,22 @@ reset_block:
     syscall
     # get a random number from [0,2] and store it in $a0
     
-    beq $a0, 0, color_red_case      # If $a0 is 0, jump to color red case
-    beq $a0, 1, color_yellow_case   # If $a0 is 1, jump to color yellow case
-    beq $a0, 2, color_blue_case     # If $a0 is 2, jump to color blue case
+    beq $a0, 0, color_red_case1      # If $a0 is 0, jump to color red case
+    beq $a0, 1, color_yellow_case1   # If $a0 is 1, jump to color yellow case
+    beq $a0, 2, color_blue_case1     # If $a0 is 2, jump to color blue case
     
     
-color_red_case:  
+color_red_case1:  
     lw $t6, color_red               # store color red in $t6
-    j case_done
-color_yellow_case:
+    j case_done1
+color_yellow_case1:
     lw $t6, color_yellow            # store color yellow in $t6
-    j case_done
-color_blue_case:
+    j case_done1
+color_blue_case1:
     lw $t6, color_blue              # store color blue in $t6
-    j case_done
-case_done:
+    j case_done1
+    
+case_done1:
     sw $t6, COLOR1
     
     
@@ -582,10 +632,10 @@ case_done:
     
 color_red_case2:  
     lw $t6, color_red               # store color red in $t6
-    j case_done
+    j case_done2
 color_yellow_case2:
     lw $t6, color_yellow            # store color yellow in $t6
-    j case_done
+    j case_done2
 color_blue_case2:
     lw $t6, color_blue              # store color blue in $t6
     j case_done2
