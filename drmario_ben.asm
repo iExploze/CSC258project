@@ -27,11 +27,11 @@ ADDR_KBRD:
     .word 0xffff0000
 
 color_red:    
-    .word 0xFF0000           # 红色
+    .word 0xFF0000
 color_yellow: 
-    .word 0xFFFF00           # 黄色
+    .word 0xFFFF00
 color_blue:   
-    .word 0x0000FF           # 蓝色
+    .word 0x0000FF
 
 pre_color_1:
     .word 0xFF0000
@@ -260,18 +260,14 @@ color_blue_case:
     
     j game_loop
 
+
 quit:
-    li $v0, 10
+    li $v0, 10                 # Syscall to terminate the program
     syscall
 
-game_loop:
-    # 1a. Check if key has been pressed
-    # 1b. Check which key has been pressed
-    # 2a. Check for collisions
-	# 2b. Update locations (capsules)
-	# 3. Draw the screen
-	# 4. Sleep
-
-    # 5. Go back to Step 1
-    j game_loop
-
+ game_loop:
+  
+ 
+ 
+ 
+ 
