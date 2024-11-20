@@ -26,11 +26,9 @@ ADDR_DSPL:
 ADDR_KBRD:
     .word 0xffff0000
     
-# the boarder for the stack to check over, not including the border itself:
-TOP_LEFT: .word 1044
-TOP_RIGHT: .word 1104
-BOT_LEFT: .word 3476
-BOT_RIGHT: .word 3536
+#the border for what to store on the stack:
+STACK_INITIAL: .word 0x10008000
+STACK_MAX: .word 0x10009000
 
 ##############################################################################
 # Mutable Data
@@ -38,12 +36,11 @@ BOT_RIGHT: .word 3536
 
 BLOCK_ROW:   .word 5           # Initial row of the block's top-left corner 
 BLOCK_COL:   .word 12          # Initial column of the block's top-left corner
-BLOCK_DIR:   .word 0           # Direction: 0 = horizontal (2x1), 1 = vertical (1x2), 3 4 are opposites of 1 and 2
+BLOCK_DIR:  .word 0         # direction 0 - 3, 0 
+BLOCK_ROW2: .word 5         # initial row of the second block
+BLOCK_COL2: .word 13        # intial col of the second block
 COLOR1:   .word 0xFF0000           # the color of the block1
 COLOR2:   .word 0xFF0000            # the color of the block 2
-
-BLOCK_ACTUAL_LOC: .word 688 # the real location of block on the bitmap
-BLOCK_ACTUAL_LOC2: .word 692 # the real location of the block on the bitmap (secondary one)
 
 STORETOSTACK: .word 0 # if we have to store to stack or not for the block default of 1 for false
 
@@ -55,37 +52,6 @@ STORETOSTACK: .word 0 # if we have to store to stack or not for the block defaul
 
     # Run the game.
 main:
-
-game_loop:
-    # Step 1a: Check if key has been pressed
-    li $v0, 32                # Syscall code for printing an integer in binary
-	li $a0, 1                 # Pass the integer 1 to print in binary
-	syscall
-	
-	la $t0, BLOCK_ACTUAL_LOC   # Load the address of BLOCK_ACTUAL_LOC into $t0
-    lw $a0, 0($t0)             # Load the value at BLOCK_ACTUAL_LOC into $a0
-
-	
-	# store everything on a stack:
-	jal store_to_stack
-	# draw everything on a stack:
-	jal draw_by_stack
-	# draw the block
-	jal draw_block
-	# keyboard checks, also check for collision
-	lw $t0, ADDR_KBRD         # Load the keyboard base address into $t0
-	lw $t2, 0($t0)            # Read the first word (status) from the keyboard
-	beq $t2, 1, keyboard_input # If $t2 == 1 (key pressed), branch to keyboard_input
-	clear_block_true: # dont mind this
-	
-	clear_block_false: # dont mind this
-	
-	# draw the boarder
-	jal draw_border
-    # 5. Go back to Step 1
-    j game_loop
-
-
 
 draw_border:
     li $t1, 0xD3D3D3             # Load a 16-bit color (0xD3D3) into $t1
@@ -211,15 +177,55 @@ vertical2:
 ##################################################################################################
 #above this is all the borders,  its a pile of shitcode now, dont touch                          #
 ##################################################################################################
-jr $ra
+
+game_loop:
+    # Step 1a: Check if key has been pressed
+    li $v0, 32                # Syscall code for printing an integer in binary
+	li $a0, 1                 # Pass the integer 1 to print in binary
+	syscall
+
+	
+	# store everything on a stack:
+	jal store_to_stack
+	# draw everything on a stack:
+	jal draw_by_stack
+	# draw the block
+	jal draw_block
+	# keyboard checks, also check for collision
+	lw $t0, ADDR_KBRD         # Load the keyboard base address into $t0
+	lw $t2, 0($t0)            # Read the first word (status) from the keyboard
+	beq $t2, 1, keyboard_input # If $t2 == 1 (key pressed), branch to keyboard_input
+	clear_block_true: # dont mind this
+	
+	clear_block_false: # dont mind this
+	
+    # 5. Go back to Step 1
+j game_loop
     
+
 
 draw_block:
     # Load block's position and direction
     lw $t1, BLOCK_ROW          # Load block's row
     lw $t2, BLOCK_COL          # Load block's column
-    lw $t3, BLOCK_DIR          # Load block's direction
     lw $t9, COLOR1              # Load block's color
+    lw $t0, ADDR_DSPL          # Load base address of the display
+    
+    # calculating the offsets
+    sll $t4, $t1, 7            # Multiply BLOCK_ROW by 128 using a shift
+    sll $t5, $t2, 2            # Multiply BLOCK_COL by 4 using a shift
+    add $t6, $t0, $t4          # Add row offset to base address
+    add $t6, $t6, $t5          # Add column offset to get the final address
+    
+    # Draw the pixel
+    sw $t9, 0($t6)             # Store the color at the calculated address
+    # also store it for later comparison
+    add $s0, $t6, $zero
+    
+    # Draw the second block
+    lw $t1, BLOCK_ROW2          # Load block's row
+    lw $t2, BLOCK_COL2          # Load block's column
+    lw $t9, COLOR2              # Load block's color
     lw $t0, ADDR_DSPL          # Load base address of the display
     
     # calculating the offsets
@@ -230,35 +236,8 @@ draw_block:
     
     # Draw the pixel
     sw $t9, 0($t6)             # Store the color at the calculated address
-    
-    # Draw the pixel beside it:
-    lw $t9, COLOR2 # load the second block's color
-    beq $t3, 0, Ddir_0         # If $t3 == 0, go to dir_0
-    beq $t3, 1, Ddir_1         # If $t3 == 1, go to dir_1
-    beq $t3, 2, Ddir_2         # If $t3 == 2, go to dir_2
-    beq $t3, 3, Ddir_3         # If $t3 == 3, go to dir_3
-    
-Ddir_0: # to the right
-    addi $t6, $t6, 4 # add 4 to go to the right by 1
-    sw $t9, 0($t6)
-    j done_second_block
-
-Ddir_1: # to the down
-    addi $t6, $t6, 128 # add by 128 to go down a row
-    sw$t9, 0($t6)
-    j done_second_block
-
-Ddir_2:
-    subi $t6, $t6, 4 # sub 4 to go to the left by 1
-    sw$t9, 0($t6)
-    j done_second_block
-
-Ddir_3:
-    subi $t6, $t6, 128 # sub by 128 to go up a row
-    sw$t9, 0($t6)
-    j done_second_block
-    
-done_second_block: # flag for skipping to
+    # also store it for later comparison
+    add $s1, $t6, $zero
 
 jr $ra
 
@@ -270,8 +249,8 @@ jr $ra
 
 draw_by_stack:
     lw $t0, ADDR_DSPL
-    lw $t1, TOP_LEFT            # Load TOP_LEFT into $t1 (start address)
-    lw $t2, BOT_RIGHT           # Load BOT_RIGHT into $t2 (end address)
+    lw $t1, STACK_INITIAL            # Load TOP_LEFT into $t1 (start address)
+    lw $t2, STACK_MAX          # Load BOT_RIGHT into $t2 (end address)
     move $t3, $t1               # Copy $t1 into $t3 (initialize counter)
 
 draw_loop_stack:
@@ -284,11 +263,11 @@ draw_loop_stack:
     # Step 1: Skip the fallable integer (1) on the stack
     addi $sp, $sp, 4            # Skip the next value (fallable flag)
 
-    # Step 2: Pop the bitmap location from the stack
+    # Step 2: Pop the color location from the stack
     lw $t5, 0($sp)              # Load the top of the stack (color) into $t4
     addi $sp, $sp, 4            # Increment $sp to pop the location
 
-    # Step 3: Pop the color from the stack
+    # Step 3: Pop the bitmap from the stack
     lw $t4, 0($sp)              # Load the next value from the stack (bitmap location) into $t5
     addi $sp, $sp, 4            # Increment $sp to pop the color
 
@@ -308,38 +287,34 @@ draw_done_stack:
 ################################################################################
 
 store_to_stack:
+    # get the location of the block to not be stored into the stack:
+    # Load 1st block's position and direction
+    lw $t1, BLOCK_ROW          # Load block's row
+    lw $t2, BLOCK_COL          # Load block's column
+    lw $t0, ADDR_DSPL          # Load base address of the display
+
     lw $t0, ADDR_DSPL
-    lw $t1, TOP_LEFT            # Load TOP_LEFT into $t1 (start address)
-    lw $t2, BOT_RIGHT           # Load BOT_RIGHT into $t2 (end address)
+    lw $t1, STACK_INITIAL            # Load TOP_LEFT into $t1 (start address)
+    lw $t2, STACK_MAX           # Load BOT_RIGHT into $t2 (end address)
+    
     move $t3, $t1               # Copy $t1 into $t3 (initialize counter)
 
 store_loop_start:
     bgt $t3, $t2, store_loop_end      # If $t3 > $t2, exit the loop
-    
-    # Step 0: Check if $t3 equals BLOCK_ACTUAL_LOC or BLOCK_ACTUAL_LOC2
-    la $t9, BLOCK_ACTUAL_LOC          # Load the address of BLOCK_ACTUAL_LOC
-    lw $t5, 0($t9)                    # Load the value of BLOCK_ACTUAL_LOC into $t0
-    beq $t3, $t5, skip_iteration      # If $t3 == BLOCK_ACTUAL_LOC, skip iteration
-    
-    la $t9, BLOCK_ACTUAL_LOC2         # Load the address of BLOCK_ACTUAL_LOC2
-    lw $t5, 0($t9)                    # Load the value of BLOCK_ACTUAL_LOC2 into $t0
-    beq $t3, $t5, skip_iteration      # If $t3 == BLOCK_ACTUAL_LOC2, skip iteration
 
     # stack storing, 1 for location, 1 for color, 1 for fallable
-    # Step 1: Calculate the bitmap location
-    add $t6, $t0, $t3           # $t6 = $t0 + $t3 (bitmap location)
     # Step 2: Push the location onto the stack
     addi $sp, $sp, -4           # Allocate space on the stack for location
-    sw $t6, 0($sp)              # Store the calculated location on the stack
+    sw $t3, 0($sp)              # Store the calculated location on the stack
     # Step 3: Load the color at the calculated location
-    lw $t7, 0($t6)              # Load the color at address $t6 into $t7
+    lw $t7, 0($t3)              # Load the color at address $t6 into $t7
     # Step 4: Push the color onto the stack
     addi $sp, $sp, -4           # Allocate space on the stack for color
     sw $t7, 0($sp)              # Store the color on the stack
     # Step 5: Push the integer 1 onto the stack
-    li $t8, 1                   # Load the value 1 into $t8
+    li $t7, 1                   # Load the value 1 into $t8
     addi $sp, $sp, -4           # Allocate space on the stack for the integer
-    sw $t8, 0($sp)              # Store the integer 1 on the stack
+    sw $t7, 0($sp)              # Store the integer 1 on the stack
     
 skip_iteration:
     addi $t3, $t3, 4            # Increment $t3 by 4
@@ -387,6 +362,10 @@ keyboard_input:
     beq $a0, 0x71, quit         # 'q' for Quit (ASCII 0x71)
     
 keyboard_input_exits:
+    # also clears the block here
+    li $t1, 0                  # Load black color (value 0) into $t1
+    sw $t1, 0($s0)             # Store black color at the address in $s0
+    sw $t1, 0($s1)             # Store black color at the address in $s1
     jr $ra                 # Return to game loop if no valid key is pressed
     
 rotate:
@@ -398,11 +377,7 @@ rotate:
 skip_reset:
     sw $t1, BLOCK_DIR           # Save the updated BLOCK_DIR back to memory
 
-    # Adjust BLOCK_ACTUAL_LOC2 based on the updated BLOCK_DIR
-    la $t2, BLOCK_ACTUAL_LOC2   # Load the address of BLOCK_ACTUAL_LOC2 into $t2
-    lw $t3, 0($t2)              # Load the current value of BLOCK_ACTUAL_LOC2 into $t3
-
-    # Check BLOCK_DIR and adjust BLOCK_ACTUAL_LOC2
+    # Check BLOCK_DIR
     li $t4, 0                   # Load constant 0 for comparison
     beq $t1, $t4, dir_0_adjust  # If BLOCK_DIR == 0, branch to dir_0_adjust
     li $t4, 1                   # Load constant 1 for comparison
@@ -412,28 +387,48 @@ skip_reset:
     li $t4, 3                   # Load constant 3 for comparison
     beq $t1, $t4, dir_3_adjust  # If BLOCK_DIR == 3, branch to dir_3_adjust
 
-    j skip_adjust               # Skip adjustment if none of the conditions are met
-
 dir_0_adjust:
-    addi $t3, $t3, 132          # Add 132 to BLOCK_ACTUAL_LOC2 for BLOCK_DIR == 0
+    #change the location by 1
+    lw $t1, BLOCK_ROW2
+    addi $t1, $t1, 1            # Increment the row
+    sw $t1, BLOCK_ROW2           # Save the updated row
+    lw $t1, BLOCK_COL2
+    addi $t1, $t1, 1            # Increment the row
+    sw $t1, BLOCK_COL2           # Save the updated row
     j skip_adjust               # Skip to the end
 
 dir_1_adjust:
-    addi $t3, $t3, 124          # Add 124 to BLOCK_ACTUAL_LOC2 for BLOCK_DIR == 1
+    #change the location by 1
+    lw $t1, BLOCK_ROW2
+    addi $t1, $t1, 1            # Increment the row
+    sw $t1, BLOCK_ROW2           # Save the updated row
+    lw $t1, BLOCK_COL2
+    subi $t1, $t1, 1            # Increment the row
+    sw $t1, BLOCK_COL2           # Save the updated row
     j skip_adjust               # Skip to the end
 
 dir_2_adjust:
-    subi $t3, $t3, 132          # Subtract 132 from BLOCK_ACTUAL_LOC2 for BLOCK_DIR == 2
+    #change the location by 1
+    lw $t1, BLOCK_ROW2
+    subi $t1, $t1, 1            # Increment the row
+    sw $t1, BLOCK_ROW2           # Save the updated row
+    lw $t1, BLOCK_COL2
+    subi $t1, $t1, 1            # Increment the row
+    sw $t1, BLOCK_COL2           # Save the updated row
     j skip_adjust               # Skip to the end
 
 dir_3_adjust:
-    subi $t3, $t3, 124          # Subtract 124 from BLOCK_ACTUAL_LOC2 for BLOCK_DIR == 3
+    #change the location by 1
+    lw $t1, BLOCK_ROW2
+    subi $t1, $t1, 1            # Increment the row
+    sw $t1, BLOCK_ROW2           # Save the updated row
+    lw $t1, BLOCK_COL2
+    addi $t1, $t1, 1            # Increment the row
+    sw $t1, BLOCK_COL2           # Save the updated row
     j skip_adjust               # Skip to the end
 
 skip_adjust:
-    sw $t3, 0($t2)              # Save the updated BLOCK_ACTUAL_LOC2 value back to memory
-
-    j clear_block_true          # Jump to the next part of the program
+    j keyboard_input_exits          # Jump to the next part of the program
 
 
 ####################################################################################################
@@ -470,9 +465,9 @@ orientationD_0:
     addi $t9, $t6, 132          
     
     lw $t5, 0($t8)
-    bne $t5, $t4, store_to_reg_true
+    bne $t5, $t4, reset_block
     lw $t5, 0($t9)
-    bne $t5, $t4, store_to_reg_true
+    bne $t5, $t4, reset_block
     
     # Return to continue execution
     j skip_orientationD_check    # Skip to move_down logic
@@ -483,7 +478,7 @@ orientationD_1:
     addi $t9, $t6, 256          # $ 2 blocks under
     
     lw $t5, 0($t9)
-    bne $t5, $t4, store_to_reg_true
+    bne $t5, $t4, reset_block
     
     # Return to continue execution
     j skip_orientationD_check    # Skip to move_down logic
@@ -494,9 +489,9 @@ orientationD_2:
     addi $t9, $t6, 128          
     
     lw $t5, 0($t8)
-    bne $t5, $t4, store_to_reg_true
+    bne $t5, $t4, reset_block
     lw $t5, 0($t9)
-    bne $t5, $t4, store_to_reg_true
+    bne $t5, $t4, reset_block
     
     # Return to continue execution
     j skip_orientationD_check    # Skip to move_down logic
@@ -506,66 +501,46 @@ orientationD_3:
     addi $t9, $t6, 128          # straight underneath
     
     lw $t5, 0($t9)
-    bne $t5, $t4, store_to_reg_true
+    bne $t5, $t4, reset_block
     
     # Return to continue execution
     j skip_orientationD_check    # Skip to move_down logic
     
 store_to_reg_true:
     li $t1, 1                      # Load the value 1 into $t0
-    la $t2, STORETOSTACK           # Load the address of STORETOSTACK into $t1
+    la $t2, reset_block           # Load the address of STORETOSTACK into $t1
     sw $t1, 0($t2)                 # Store the value 1 at the address of STORETOSTACK
 
 skip_orientationD_check:
+
     # Step 1: Increment BLOCK_ROW
+    lw $t1, BLOCK_ROW
     addi $t1, $t1, 1            # Increment the row
     sw $t1, BLOCK_ROW           # Save the updated row
-
-    # Step 2: Add 128 to BLOCK_ACTUAL_LOC
-    la $t2, BLOCK_ACTUAL_LOC    # Load the address of BLOCK_ACTUAL_LOC into $t2
-    lw $t3, 0($t2)              # Load the value of BLOCK_ACTUAL_LOC into $t3
-    addi $t3, $t3, 128          # Add 128 to the value
-    sw $t3, 0($t2)              # Store the updated value back into BLOCK_ACTUAL_LOC
-
-    # Step 3: Add 128 to BLOCK_ACTUAL_LOC2
-    la $t4, BLOCK_ACTUAL_LOC2   # Load the address of BLOCK_ACTUAL_LOC2 into $t4
-    lw $t5, 0($t4)              # Load the value of BLOCK_ACTUAL_LOC2 into $t5
-    addi $t5, $t5, 128          # Add 128 to the value
-    sw $t5, 0($t4)              # Store the updated value back into BLOCK_ACTUAL_LOC2
+    
+    lw $t1, BLOCK_ROW2
+    addi $t1, $t1, 1            # Increment the row
+    sw $t1, BLOCK_ROW2           # Save the updated row
 
     # Step 4: Return to keyboard input handling
     j keyboard_input_exits      # Jump back to the keyboard input handling
-
     
 reset_block:
 
-    #reset the blockcol and blockrow and blockdir values:
-    # Step 1: Store current values onto the stack
-    lw $t1, BLOCK_ROW           # Load BLOCK_ROW into $t1
-    addi $sp, $sp, -4           # Allocate space on the stack
-    sw $t1, 0($sp)              # Store BLOCK_ROW onto the stack
-
-    lw $t2, BLOCK_COL           # Load BLOCK_COL into $t2
-    addi $sp, $sp, -4           # Allocate space on the stack
-    sw $t2, 0($sp)              # Store BLOCK_COL onto the stack
-
-    lw $t3, BLOCK_DIR           # Load BLOCK_DIR into $t3
-    addi $sp, $sp, -4           # Allocate space on the stack
-    sw $t3, 0($sp)              # Store BLOCK_DIR onto the stack
-
-    # Step 2: Reset BLOCK_ROW, BLOCK_COL, and BLOCK_DIR to default values
-    li $t1, 5                   # Load default value for BLOCK_ROW
-    sw $t1, BLOCK_ROW           # Reset BLOCK_ROW to default
-
-    li $t2, 12                  # Load default value for BLOCK_COL
-    sw $t2, BLOCK_COL           # Reset BLOCK_COL to default
-
-    li $t3, 0                   # Load default value for BLOCK_DIR
-    sw $t3, BLOCK_DIR           # Reset BLOCK_DIR to default
+    li $t1, 5
+    sw $t1, BLOCK_ROW
+    li $t1, 12
+    sw $t1, BLOCK_COL
+    li $t1, 0
+    sw $t1, BLOCK_DIR
+    li $t1, 5
+    sw $t1, BLOCK_ROW2
+    li $t1, 13
+    sw $t1, BLOCK_COL2
 
 jr $ra
 
-    
+   
 ####################################################################################################
 # Checking going down      above                                                                   #
 ####################################################################################################
@@ -648,18 +623,10 @@ skip_orientationL_check:
     lw $t1, BLOCK_COL           # Load current column
     subi $t1, $t1, 1            # Subtract 1 from the column
     sw $t1, BLOCK_COL           # Save the updated column
-
-    # Step 2: Subtract 4 from BLOCK_ACTUAL_LOC
-    la $t2, BLOCK_ACTUAL_LOC    # Load the address of BLOCK_ACTUAL_LOC into $t2
-    lw $t3, 0($t2)              # Load the value of BLOCK_ACTUAL_LOC into $t3
-    subi $t3, $t3, 4            # Subtract 4 from the value
-    sw $t3, 0($t2)              # Store the updated value back into BLOCK_ACTUAL_LOC
-
-    # Step 3: Subtract 4 from BLOCK_ACTUAL_LOC2
-    la $t4, BLOCK_ACTUAL_LOC2   # Load the address of BLOCK_ACTUAL_LOC2 into $t4
-    lw $t5, 0($t4)              # Load the value of BLOCK_ACTUAL_LOC2 into $t5
-    subi $t5, $t5, 4            # Subtract 4 from the value
-    sw $t5, 0($t4)              # Store the updated value back into BLOCK_ACTUAL_LOC2
+    
+    lw $t1, BLOCK_COL2           # Load current column
+    subi $t1, $t1, 1            # Subtract 1 from the column
+    sw $t1, BLOCK_COL2           # Save the updated column
 
     # Step 4: Return to keyboard input handling
     j keyboard_input_exits      # Jump back to the keyboard input handling
@@ -742,18 +709,10 @@ skip_orientationR_check:
     lw $t1, BLOCK_COL           # Load current column
     addi $t1, $t1, 1            # Increment the column
     sw $t1, BLOCK_COL           # Save the updated column
-
-    # Step 2: Add 4 to BLOCK_ACTUAL_LOC
-    la $t2, BLOCK_ACTUAL_LOC    # Load the address of BLOCK_ACTUAL_LOC into $t2
-    lw $t3, 0($t2)              # Load the value of BLOCK_ACTUAL_LOC into $t3
-    addi $t3, $t3, 4            # Add 4 to the value
-    sw $t3, 0($t2)              # Store the updated value back into BLOCK_ACTUAL_LOC
-
-    # Step 3: Add 4 to BLOCK_ACTUAL_LOC2
-    la $t4, BLOCK_ACTUAL_LOC2   # Load the address of BLOCK_ACTUAL_LOC2 into $t4
-    lw $t5, 0($t4)              # Load the value of BLOCK_ACTUAL_LOC2 into $t5
-    addi $t5, $t5, 4            # Add 4 to the value
-    sw $t5, 0($t4)              # Store the updated value back into BLOCK_ACTUAL_LOC2
+    
+    lw $t1, BLOCK_COL2           # Load current column
+    addi $t1, $t1, 1            # Increment the column
+    sw $t1, BLOCK_COL2           # Save the updated column
 
     # Step 4: Return to keyboard input handling
     j keyboard_input_exits      # Jump back to the keyboard input handling
