@@ -51,9 +51,12 @@ color_blue:
     
 virus_array: .space 4    # array for the location of the viruses
 static_capsule_array: .space 1024 # array for the location of the capsules,
+array_size:         .word 256      # Number of elements in the array
 # each capsule is 4 spots on the array, each spot is one of the bit map location of the capsule
 # if one of the capsule got destroyed, then we move that location of the broken capsule to ADDR_DPSL, which is black
 # direction of that capsule will also shift to something else, basically 4 which is impossible
+
+falling_blocks: .word # a bool for checking if we are going to update based on falling blocks now, default to 0, otherwise true
 
 ##############################################################################
 # Code
@@ -243,6 +246,24 @@ case_done0:
 
 # first store the virus and the border that are not droppable to the stack:
 
+# some init stuff for the static_capsule_array:
+    # Initialize registers
+    la $t0, static_capsule_array  # Base address of the array
+    la $t1, array_size            # Address of the size of the array
+    lw $t2, 0($t1)                # Load array size into $t2 (256 words)
+    li $t3, 0                     # Value to initialize the array (0)
+    li $t4, 0                     # Index counter
+
+init_array:
+    beq $t4, $t2, end_init        # Exit loop when index equals size
+    mul $t5, $t4, 4               # Calculate byte offset (index * 4)
+    add $t6, $t0, $t5             # Address of array[index]
+    sw $t3, 0($t6)                # Store 0 at array[index]
+    addi $t4, $t4, 1              # Increment index
+    j init_array                  # Repeat initialization
+    
+end_init:
+
 
 game_loop:
     # Step 1a: Check if key has been pressed
@@ -261,7 +282,9 @@ game_loop:
 	lw $t0, ADDR_KBRD         # Load the keyboard base address into $t0
 	lw $t2, 0($t0)            # Read the first word (status) from the keyboard
 	beq $t2, 1, keyboard_input # If $t2 == 1 (key pressed), branch to keyboard_inpu
-keyboard_done:
+    keyboard_done:
+    
+    falled:
 	
     # 5. Go back to Step 1
 j game_loop
@@ -590,6 +613,31 @@ skip_orientationD_check:
     j keyboard_input_exits      # Jump back to the keyboard input handling
     
 check_4:
+    ####################################################################################
+    #store the block info inthe array: static_capsule_array
+    
+    # Load address of static_capsule_array into $t0
+        la $t0, static_capsule_array  # Base address of the array
+        la $t1, array_size            # Address of array_size
+        lw $t2, 0($t1)                # Load array size (256 words)
+        li $t3, 0                     # Value to search for (0x0)
+        li $t4, 0                     # Index counter
+    
+    find_available:
+        mul $t5, $t4, 4               # Calculate byte offset (index * 4)
+        add $t6, $t0, $t5             # Address of array[index]
+        lw $t7, 0($t6)                # Load array[index] into $t7
+        beq $t7, $t3, found_slot      # If array[index] == 0x0, use this slot
+        addi $t4, $t4, 1              # Increment index
+        j find_available              # Continue searching
+    
+    found_slot:
+        # Store block information starting from the found slot
+        sw $s0, 0($t6)                # Store $s0 in the first available slot
+        addi $t6, $t6, 4              # Move to the next slot
+        sw $s1, 0($t6)                # Store $s1 in the next slot
+    
+    #############################################################################
     # Perform first block logic
     add $t1, $s0, $zero       # Load the value of $s0 into $t1
     addi $t2, $t1, 128        # $t2 = $t1 + 128
@@ -598,11 +646,11 @@ check_4:
 
     lw $t5, 0($t1)            # Load the word at $t1 into $t5
     lw $t6, 0($t2)            # Load the color at $t2 into $t6
-    bne $t6, $t5, checkdir3         # If $t6 != $t5, skip to end
+    bne $t6, $t5, check2_4         # If $t6 != $t5, skip to end
     lw $t6, 0($t3)            # Load the color at $t3 into $t6
-    bne $t6, $t5, checkdir3         # If $t6 != $t5, skip to end
+    bne $t6, $t5, check2_4         # If $t6 != $t5, skip to end
     lw $t6, 0($t4)            # Load the color at $t4 into $t6
-    bne $t6, $t5, checkdir3         # If $t6 != $t5, skip to end
+    bne $t6, $t5, check2_4         # If $t6 != $t5, skip to end
 
     # If all match, set to black
     li $t7, 0                 # Load black color (value 0) into $t7
@@ -610,8 +658,41 @@ check_4:
     sw $t7, 0($t2)            # Store black at $t2
     sw $t7, 0($t3)            # Store black at $t3
     sw $t7, 0($t4)            # Store black at $t4
+    
+li $t9, 0
+li $t8, 256
+la $t7, static_capsule_array
+array_loop2:
+    bgt $t9, $t8, array_loop2_end      # If $t9 > $t8, exit the loop
 
-checkdir3:
+    lw $t6, 0($t7) # store value of t7 at t6
+    
+    beq $t6, $t1, set_to_5_2
+    beq $t6, $t2, set_to_5_2
+    beq $t6, $t3, set_to_5_2
+    beq $t6, $t4, set_to_5_2
+    
+    j no_set2_to5
+    
+    set_to_5_2:
+    # set the 1 or 2 blocks in the array to 5
+    li $t5, 5
+    sw $t5, 0($t7)
+    
+    no_set2_to5:
+    addi $t9, $t9, 1
+    addi $t7, $t7, 4
+    j array_loop2                # Repeat the loop
+
+array_loop2_end:
+    
+    # update that we need to check for falling blocks now
+    la $t9, falling_blocks
+    li $t8, 1            # Load the value 1 into $t1
+    sw $t8, 0($t9)       # Store 1 into falling_blocks
+    
+
+check2_4:
     # Perform second block logic
     add $t1, $s1, $zero       # Load the value of $s1 into $t1
     addi $t2, $t1, 128        # $t2 = $t1 + 128
@@ -632,22 +713,33 @@ checkdir3:
     sw $t7, 0($t2)            # Store black at $t2
     sw $t7, 0($t3)            # Store black at $t3
     sw $t7, 0($t4)            # Store black at $t4
-    j reset_block          # Jump to end
+    
+    
+li $t9, 0
+li $t8, 256
+la $t7, static_capsule_array
+array_loop1:
+    bgt $t9, $t8, array_loop1_end      # If $t9 > $t8, exit the loop
 
-end:
-    li $t1, 0x100083ac
-    li $t2, 0x100083b0
-    li $t3, 0x100083b4
-    li $t4, 0x100083b8
+    lw $t6, 0($t7) # store value of t7 at t6
+    
+    beq $t6, $t1, set_to_5
+    beq $t6, $t2, set_to_5
+    beq $t6, $t3, set_to_5
+    beq $t6, $t4, set_to_5
+    
+    j no_set_to5
+    set_to_5:
+    # set the 1 or 2 blocks in the array to 5
+    li $t5, 5
+    sw $t5, 0($t7)
+    
+    no_set_to5:
+    addi $t9, $t9, 1
+    addi $t7, $t7, 4
+    j array_loop1                # Repeat the loop
 
-    # Check if $s0 equals $t1
-    beq $s0, $t1, quit        # If $s0 == $t1, jump to quit
-    # Check if $s0 equals $t2
-    beq $s0, $t2, quit        # If $s0 == $t2, jump to quit
-    # Check if $s0 equals $t3
-    beq $s0, $t3, quit        # If $s0 == $t3, jump to quit
-    # Check if $s0 equals $t4
-    beq $s0, $t4, quit        # If $s0 == $t4, jump to quit
+array_loop1_end:
     
     
 reset_block:
@@ -712,18 +804,31 @@ color_blue_case2:
 case_done2:
     sw $t6, COLOR2
     
+    
+#check for ending
+li $t1, 0x100083ac
+li $t2, 0x100083b0
+li $t3, 0x100083b4
+li $t4, 0x100083b8
+
+# Check if $s0 equals $t1
+beq $s0, $t1, quit        # If $s0 == $t1, jump to quit
+# Check if $s0 equals $t2
+beq $s0, $t2, quit        # If $s0 == $t2, jump to quit
+# Check if $s0 equals $t3
+beq $s0, $t3, quit        # If $s0 == $t3, jump to quit
+# Check if $s0 equals $t4
+beq $s0, $t4, quit        # If $s0 == $t4, jump to quit
+    
 jr $ra
 
    
 ####################################################################################################
-# Checking falling blocks                                                                          #
+# Checking falling blocks + moving them                                                            #
 ####################################################################################################
+move_falling_blocks:
 
-falling_blocks:
-# $T1
-# $T2
-# $T3
-# $T4 are the right capsules to check 
+
 
 
 j reset_block
