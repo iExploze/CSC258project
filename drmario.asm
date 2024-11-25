@@ -30,6 +30,8 @@ ADDR_KBRD:
 STACK_INITIAL: .word 0x10008000
 STACK_MAX: .word 0x10009000
 
+virus_array: .space 16
+
 ##############################################################################
 # Mutable Data
 ##############################################################################
@@ -48,8 +50,6 @@ color_yellow:
     .word 0xFFFF00
 color_blue:   
     .word 0x0000FF
-
-STORETOSTACK: .word 0 # if we have to store to stack or not for the block default of 1 for false
 
 ##############################################################################
 # Code
@@ -186,6 +186,7 @@ vertical2:
 ##############################################################################
 li $t8, 4
 li $t9, 0
+la $s2, virus_array      # Load base address of the virus array
 random_virus:                       # get random position for virus (only the bottom half of the bottle)
     addi $t2, $t0, 2196             # the first block of posible virus, which located at the top left of the bottom half of the bottle -> $t2
     li $v0, 42
@@ -226,6 +227,8 @@ color_blue_case0:
     
 case_done0:
     sw $t6, 0( $t2 )
+    sw $t2, 0($s2)           # Store position in the virus array
+    addi $s2, $s2, 4         # Move to the next entry in the virus array
     
     addi $t9, $t9, 1
     bne $t9, $t8, random_virus
@@ -233,6 +236,9 @@ case_done0:
 ##################################################################################################
 #above this is all the borders,  its a pile of shitcode now, dont touch                          #
 ##################################################################################################
+
+# first store the virus and the border that are not droppable to the stack:
+
 
 game_loop:
     # Step 1a: Check if key has been pressed
