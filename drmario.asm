@@ -30,8 +30,6 @@ ADDR_KBRD:
 STACK_INITIAL: .word 0x10008000
 STACK_MAX: .word 0x10009000
 
-virus_array: .space 16
-
 ##############################################################################
 # Mutable Data
 ##############################################################################
@@ -42,7 +40,7 @@ BLOCK_DIR:  .word 0         # direction 0 - 3, 0
 BLOCK_ROW2: .word 5         # initial row of the second block
 BLOCK_COL2: .word 13        # intial col of the second block
 COLOR1:   .word 0xFF0000           # the color of the block1
-COLOR2:   .word 0xFF0000            # the color of the block 2
+COLOR2:   .word 0xFF0000            # the color of the block    
 
 color_red:    
     .word 0xFF0000
@@ -50,6 +48,12 @@ color_yellow:
     .word 0xFFFF00
 color_blue:   
     .word 0x0000FF
+    
+virus_array: .space 4    # array for the location of the viruses
+static_capsule_array: .space 1024 # array for the location of the capsules,
+# each capsule is 4 spots on the array, each spot is one of the bit map location of the capsule
+# if one of the capsule got destroyed, then we move that location of the broken capsule to ADDR_DPSL, which is black
+# direction of that capsule will also shift to something else, basically 4 which is impossible
 
 ##############################################################################
 # Code
@@ -372,7 +376,7 @@ store_loop_start:
     addi $sp, $sp, -4           # Allocate space on the stack for color
     sw $t7, 0($sp)              # Store the color on the stack
     # Step 5: Push the integer 1 onto the stack
-    li $t7, 1                   # Load the value 1 into $t8
+    li $t7, 0                   # Load the value 1 into $t8
     addi $sp, $sp, -4           # Allocate space on the stack for the integer
     sw $t7, 0($sp)              # Store the integer 1 on the stack
     
@@ -586,22 +590,7 @@ skip_orientationD_check:
     j keyboard_input_exits      # Jump back to the keyboard input handling
     
 check_4:
-    
-# Load BLOCK_DIR into $t0
-    lw $t0, BLOCK_DIR          # Load the direction into $t0
-
-# Branch based on BLOCK_DIR value
-    li $t8, 0                  # Load 0 into $t8
-    beq $t0, $t8, checkdir0    # If BLOCK_DIR == 0, go to checkdir0
-
-    li $t8, 3                  # Load 3 into $t8
-    beq $t0, $t8, checkdir3    # If BLOCK_DIR == 3, go to checkdir3
-
-    # If BLOCK_DIR is not 0 or 3, do both checks
-    j do_both
-
-checkdir0:
-    # Perform checkdir0 logic
+    # Perform first block logic
     add $t1, $s0, $zero       # Load the value of $s0 into $t1
     addi $t2, $t1, 128        # $t2 = $t1 + 128
     addi $t3, $t2, 128        # $t3 = $t2 + 128
@@ -621,10 +610,9 @@ checkdir0:
     sw $t7, 0($t2)            # Store black at $t2
     sw $t7, 0($t3)            # Store black at $t3
     sw $t7, 0($t4)            # Store black at $t4
-    j checkdir3                     # Jump to end
 
 checkdir3:
-    # Perform checkdir3 logic
+    # Perform second block logic
     add $t1, $s1, $zero       # Load the value of $s1 into $t1
     addi $t2, $t1, 128        # $t2 = $t1 + 128
     addi $t3, $t2, 128        # $t3 = $t2 + 128
@@ -632,11 +620,11 @@ checkdir3:
 
     lw $t5, 0($t1)            # Load the word at $t1 into $t5
     lw $t6, 0($t2)            # Load the color at $t2 into $t6
-    bne $t6, $t5, end         # If $t6 != $t5, skip to end
+    bne $t6, $t5, reset_block         # If $t6 != $t5, skip to end
     lw $t6, 0($t3)            # Load the color at $t3 into $t6
-    bne $t6, $t5, end         # If $t6 != $t5, skip to end
+    bne $t6, $t5, reset_block         # If $t6 != $t5, skip to end
     lw $t6, 0($t4)            # Load the color at $t4 into $t6
-    bne $t6, $t5, end         # If $t6 != $t5, skip to end
+    bne $t6, $t5, reset_block         # If $t6 != $t5, skip to end
 
     # If all match, set to black
     li $t7, 0                 # Load black color (value 0) into $t7
@@ -644,11 +632,7 @@ checkdir3:
     sw $t7, 0($t2)            # Store black at $t2
     sw $t7, 0($t3)            # Store black at $t3
     sw $t7, 0($t4)            # Store black at $t4
-    j reset_block                     # Jump to end
-
-do_both:
-    # Perform checkdir0 logic
-    j checkdir0               # Jump to checkdir0 (it will continue to checkdir3 after end)
+    j reset_block          # Jump to end
 
 end:
     li $t1, 0x100083ac
@@ -732,7 +716,21 @@ jr $ra
 
    
 ####################################################################################################
-# Checking going down      above                                                                   #
+# Checking falling blocks                                                                          #
+####################################################################################################
+
+falling_blocks:
+# $T1
+# $T2
+# $T3
+# $T4 are the right capsules to check 
+
+
+j reset_block
+
+
+####################################################################################################
+# Checking going left                                                                              #
 ####################################################################################################
 
 
