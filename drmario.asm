@@ -12,7 +12,7 @@
 # - Unit height in pixels: 2     
 # - Display width in pixels: 64
 # - Display height in pixels: 64
-# - Base Address for Display: 0x10008000 ($gp)
+# - Base Address for Display: 0x10008000 ($t0)
 ##############################################################################
 
     .data
