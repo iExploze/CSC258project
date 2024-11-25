@@ -56,7 +56,7 @@ array_size:         .word 256      # Number of elements in the array
 # if one of the capsule got destroyed, then we move that location of the broken capsule to ADDR_DPSL, which is black
 # direction of that capsule will also shift to something else, basically 4 which is impossible
 
-falling_blocks: .word # a bool for checking if we are going to update based on falling blocks now, default to 0, otherwise true
+falling_blocks: .word 0# a bool for checking if we are going to update based on falling blocks now, default to 0, otherwise true
 
 ##############################################################################
 # Code
@@ -271,22 +271,27 @@ game_loop:
 	li $a0, 1                 # Pass the integer 1 to print in binary
 	syscall
 
-	
-	# store everything on a stack:
-	jal store_to_stack
-	# draw everything on a stack:
-	jal draw_by_stack
-	# draw the block
-	jal draw_block
-	# keyboard checks, also check for collision
-	lw $t0, ADDR_KBRD         # Load the keyboard base address into $t0
-	lw $t2, 0($t0)            # Read the first word (status) from the keyboard
-	beq $t2, 1, keyboard_input # If $t2 == 1 (key pressed), branch to keyboard_inpu
-    keyboard_done:
+    # Store everything on a stack:
+    jal store_to_stack
+    # Draw everything on a stack:
+    jal draw_by_stack
+    # Draw the block:
+    jal draw_block
     
-    falled:
-	
-    # 5. Go back to Step 1
+    # Check if falling_blocks is enabled
+    la $t3, falling_blocks    # Load the address of falling_blocks
+    lw $t4, 0($t3)            # Load the value of falling_blocks
+    beq $t4, 1, move_falling_blocks # If falling_blocks == 1, skip to move_falling_blocks
+
+    # Keyboard checks, also check for collision
+    lw $t0, ADDR_KBRD         # Load the keyboard base address into $t0
+    lw $t2, 0($t0)            # Read the first word (status) from the keyboard
+    beq $t2, 1, keyboard_input # If $t2 == 1 (key pressed), branch to keyboard_input
+
+keyboard_done:
+
+falled:
+
 j game_loop
     
 
@@ -740,6 +745,11 @@ array_loop1:
     j array_loop1                # Repeat the loop
 
 array_loop1_end:
+
+    # update that we need to check for falling blocks now
+    la $t9, falling_blocks
+    li $t8, 1            # Load the value 1 into $t1
+    sw $t8, 0($t9)       # Store 1 into falling_blocks
     
     
 reset_block:
@@ -827,11 +837,68 @@ jr $ra
 # Checking falling blocks + moving them                                                            #
 ####################################################################################################
 move_falling_blocks:
+    li $t9, 0                     # Initialize loop counter
+    li $t8, 256                   # Set loop limit (256 elements in the array)
+    la $t0, static_capsule_array  # Base address of the array
+
+falling_loop:
+    lw $t1, 0($t0)                # Load the value at address 0($t0) into $t1
+    li $t2, 0x0                   # Load the value 0x0 into $t2
+    beq $t1, $t2, falling_loop_end # If the value at 0($t0) == 0x0, branch to falling_loop_end  
+    bgt $t9, $t8, falling_loop_end # If $t9 > $t8, exit the loop
+
+    # Load left and right elements for comparison
+    lw $t3, 0($t0)                # Left element (current)
+    lw $t4, 4($t0)                # Right element (next)
+
+    # Case 1: Both left and right are 0x5
+    li $t5, 0x5                   # Load 0x5 into $t5
+    beq $t3, $t5, case1_check     # If left == 0x5, check for right
+    j case2                       # Otherwise, move to case 2
+
+case1_check:
+    # Check if right == 0x5
+    bne $t4, $t5, case2          # If right != 0x5, move to case 2
+    j continue_loop              # Continue the loop
+
+case2:
+    # Case 2: Left is 0x5, right can be anything
+    bne $t3, $t5, case3          # If left != 0x5, move to case 3
+
+    # Calculate address of 0(right + 128)
+    addi $t6, $t0, 516           # Address of 0(right + 128), right is 4 bytes after left
+    lw $t7, 0($t6)               # Load the value at 0(right + 128) into $t7
+
+    # Check if 0(right + 128) == 0xD3D3D3
+    li $t8, 0xD3D3D3             # Load 0xD3D3D3 into $t8
+    bne $t7, $t8, continue_loop  # If the value is not 0xD3D3D3, skip to continue_loop
+
+    # Set 0(right + 128) = 0xD3D3D3
+    sw $t8, 0($t6)               # Store 0xD3D3D3 at 0(right + 128)
+
+    j continue_loop              # Continue to the next iteration
 
 
+case3:
+    # Case 3: Right is 0x5, left can be anything
+    beq $t4, $t5, continue_loop   # If right == 0x5, handle case 3
+    j case4                       # Otherwise, move to case 4
 
+case4:
+    # Case 4: Both can be anything
+    # Default processing for case 4 (if any additional logic is needed)
 
-j reset_block
+continue_loop:
+    # Move to the next index
+    addi $t9, $t9, 2              # Increment loop counter by 2 (process pairs)
+    addi $t0, $t0, 8              # Move to the next pair of elements (2 words)
+    j falling_loop                # Repeat the loop
+
+falling_loop_end:
+    # Exit the loop
+    # Add any necessary cleanup or logic here
+    j falled                 # Jump to reset_block
+
 
 
 ####################################################################################################
