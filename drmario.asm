@@ -606,11 +606,6 @@ orientationD_3:
     
     # Return to continue execution
     j skip_orientationD_check    # Skip to move_down logic
-    
-store_to_reg_true:
-    li $t1, 1                      # Load the value 1 into $t0
-    la $t2, check_4           # Load the address of STORETOSTACK into $t1
-    sw $t1, 0($t2)                 # Store the value 1 at the address of STORETOSTACK
 
 skip_orientationD_check:
 
@@ -846,6 +841,11 @@ jr $ra
 # Checking falling blocks + moving them                                                            #
 ####################################################################################################
 move_falling_blocks:
+    # update that we need to check for falling blocks now
+    la $t9, falling_blocks
+    li $t8, 0            # Load the value 1 into $t1
+    sw $t8, 0($t9)       # Store 1 into falling_blocks
+
     li $t9, 0                     # Initialize loop counter
     li $t8, 256                   # Set loop limit (256 elements in the array)
     la $t0, static_capsule_array  # Base address of the array
@@ -861,7 +861,7 @@ beq $t1, $t2, left_empty
 lw $t1, 4($t0) # load the right side value
 beq $t1, $t2, right_empty
 
-j continue_loop
+j both_full
 
 left_empty:
 # first case, where the twoblocks are completely erased, then jump to the next part
@@ -883,6 +883,11 @@ sw $t2, 128($t1)
 sw $t5, 0($t1)
 addi $t1, $t1, 128
 sw $t1, 4($t0)
+
+# this is to make sure if there is still blocks moving we stay in falling block zone
+la $t9, falling_blocks
+li $t8, 1            # Load the value 1 into $t1
+sw $t8, 0($t9)       # Store 1 into falling_blocks
 
 j continue_loop
 
@@ -908,7 +913,107 @@ sw $t5, 0($t1)
 addi $t1, $t1, 128
 sw $t1, 0($t0)
 
+# this is to make sure if there is still blocks moving we stay in falling block zone
+la $t9, falling_blocks
+li $t8, 1            # Load the value 1 into $t1
+sw $t8, 0($t9)       # Store 1 into falling_blocks
+
 j continue_loop
+
+both_full:
+    # Load the bitmap locations
+    lw $t1, 0($t0)          # Load the bitmap location of left into $t1
+    lw $t2, 4($t0)          # Load the bitmap location of right into $t2
+
+    # Check direction 1: t1 = t2 - 4
+    addi $t3, $t2, -4       # Calculate t2 - 4
+    beq $t1, $t3, falling_dir1      # If t1 == t2 - 4, go to dir1
+
+    # Check direction 2: t1 = t2 - 128
+    addi $t3, $t2, -128     # Calculate t2 - 128
+    beq $t1, $t3, falling_dir2      # If t1 == t2 - 128, go to dir2
+
+    # Check direction 3: t1 = t2 + 4
+    addi $t3, $t2, 4        # Calculate t2 + 4
+    beq $t1, $t3, falling_dir3      # If t1 == t2 + 4, go to dir3
+
+    # Check direction 4: t1 = t2 + 128
+    addi $t3, $t2, 128      # Calculate t2 + 128
+    beq $t1, $t3, falling_dir4      # If t1 == t2 + 128, go to dir4
+
+    # Default case if no direction matches
+    j continue_loop    # Skip to the next part of the program
+
+falling_dir1:
+    # Code for direction 1
+    # check for both blocks under,
+    
+    lw $t3, 128($t1) # load the color for the left under
+    lw $t4, 128($t2) # load the color for the right under
+    li $t5, 0x0 # load black
+    
+    beq $t3, $t5, check_falling_dir1
+    j continue_loop
+    
+    check_falling_dir1:
+    beq $t4, $t5, double_move_down # If $t4 == black, go to double_move_down 
+    
+    j continue_loop
+
+falling_dir2:
+    lw $t3, 128($t1) # load the color for the left under
+    lw $t4, 128($t2) # load the color for the right under
+    li $t5, 0x0 # load black
+    
+    beq $t4, $t5,  double_move_down # only one check this time
+    j continue_loop
+
+falling_dir3:
+    # Code for direction 3
+    # check for both blocks under,
+    
+    lw $t3, 128($t1) # load the color for the left under
+    lw $t4, 128($t2) # load the color for the right under
+    li $t5, 0x0 # load black
+    
+    beq $t3, $t5, check_falling_dir3
+    j continue_loop
+    
+    check_falling_dir3:
+    beq $t4, $t5, double_move_down # If $t4 == black, go to double_move_down 
+    
+    j continue_loop
+
+falling_dir4:
+    lw $t3, 128($t1) # load the color for the left under
+    lw $t4, 128($t2) # load the color for the right under
+    li $t5, 0x0 # load black
+    
+    beq $t3, $t5,  double_move_down # only one check this time
+    j continue_loop
+    
+double_move_down:
+    lw $t6, 0($t1)         # Load the value at 0($t1) into $t6
+    lw $t7, 0($t2)         # Load the value at 0($t2) into $t7
+    
+    sw $t6, 128($t1) # store the color 1 block down
+    sw $t7, 128($t2) # store the color 1 block down
+    
+    li $t5, 0x0 # change og location color to black
+    sw $t5, 0($t1) # change og location color to black
+    sw $t5, 0($t2) # change og location color to black
+    
+    addi $t1, $t1, 128 # store the new capsule location for t1
+    sw $t1, 0($t0)
+
+    addi $t2, $t2, 128 # store the new capsule location for t2
+    sw $t2, 4($t0)
+    
+    # this is to make sure if there is still blocks moving we stay in falling block zone
+    la $t9, falling_blocks
+    li $t8, 1            # Load the value 1 into $t1
+    sw $t8, 0($t9)       # Store 1 into falling_blocks
+
 
 continue_loop:
     # Move to the next index
