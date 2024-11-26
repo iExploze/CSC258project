@@ -276,6 +276,9 @@ game_loop:
     # Draw everything on a stack:
     jal draw_by_stack
     
+    # check 4
+    jal check_4
+    
     # Check if falling_blocks is enabled
     la $t3, falling_blocks    # Load the address of falling_blocks
     lw $t4, 0($t3)            # Load the value of falling_blocks
@@ -566,9 +569,9 @@ orientationD_0:
     addi $t9, $t6, 132          
     
     lw $t5, 0($t8)
-    bne $t5, $t4, check_4
+    bne $t5, $t4, store_to_new_block
     lw $t5, 0($t9)
-    bne $t5, $t4, check_4
+    bne $t5, $t4, store_to_new_block
     
     # Return to continue execution
     j skip_orientationD_check    # Skip to move_down logic
@@ -579,7 +582,7 @@ orientationD_1:
     addi $t9, $t6, 256          # $ 2 blocks under
     
     lw $t5, 0($t9)
-    bne $t5, $t4, check_4
+    bne $t5, $t4, store_to_new_block
     
     # Return to continue execution
     j skip_orientationD_check    # Skip to move_down logic
@@ -590,9 +593,9 @@ orientationD_2:
     addi $t9, $t6, 128          
     
     lw $t5, 0($t8)
-    bne $t5, $t4, check_4
+    bne $t5, $t4, store_to_new_block
     lw $t5, 0($t9)
-    bne $t5, $t4, check_4
+    bne $t5, $t4, store_to_new_block
     
     # Return to continue execution
     j skip_orientationD_check    # Skip to move_down logic
@@ -602,7 +605,7 @@ orientationD_3:
     addi $t9, $t6, 128          # straight underneath
     
     lw $t5, 0($t9)
-    bne $t5, $t4, check_4
+    bne $t5, $t4, store_to_new_block
     
     # Return to continue execution
     j skip_orientationD_check    # Skip to move_down logic
@@ -621,8 +624,7 @@ skip_orientationD_check:
     # Step 4: Return to keyboard input handling
     j keyboard_input_exits      # Jump back to the keyboard input handling
     
-check_4:
-    ####################################################################################
+store_to_new_block:
     #store the block info inthe array: static_capsule_array
     
     # Load address of static_capsule_array into $t0
@@ -647,113 +649,7 @@ check_4:
         sw $s1, 0($t6)                # Store $s1 in the next slot
     
     #############################################################################
-    # Perform first block logic
-    add $t1, $s0, $zero       # Load the value of $s0 into $t1
-    addi $t2, $t1, 128        # $t2 = $t1 + 128
-    addi $t3, $t2, 128        # $t3 = $t2 + 128
-    addi $t4, $t3, 128        # $t4 = $t3 + 128
-
-    lw $t5, 0($t1)            # Load the word at $t1 into $t5
-    lw $t6, 0($t2)            # Load the color at $t2 into $t6
-    bne $t6, $t5, check2_4         # If $t6 != $t5, skip to end
-    lw $t6, 0($t3)            # Load the color at $t3 into $t6
-    bne $t6, $t5, check2_4         # If $t6 != $t5, skip to end
-    lw $t6, 0($t4)            # Load the color at $t4 into $t6
-    bne $t6, $t5, check2_4         # If $t6 != $t5, skip to end
-
-    # If all match, set to black
-    li $t7, 0                 # Load black color (value 0) into $t7
-    sw $t7, 0($t1)            # Store black at $t1
-    sw $t7, 0($t2)            # Store black at $t2
-    sw $t7, 0($t3)            # Store black at $t3
-    sw $t7, 0($t4)            # Store black at $t4
-    
-li $t9, 0
-li $t8, 256
-la $t7, static_capsule_array
-array_loop2:
-    bgt $t9, $t8, array_loop2_end      # If $t9 > $t8, exit the loop
-
-    lw $t6, 0($t7) # store value of t7 at t6
-    
-    beq $t6, $t1, set_to_5_2
-    beq $t6, $t2, set_to_5_2
-    beq $t6, $t3, set_to_5_2
-    beq $t6, $t4, set_to_5_2
-    
-    j no_set2_to5
-    
-    set_to_5_2:
-    # set the 1 or 2 blocks in the array to 5
-    li $t5, 5
-    sw $t5, 0($t7)
-    
-    no_set2_to5:
-    addi $t9, $t9, 1
-    addi $t7, $t7, 4
-    j array_loop2                # Repeat the loop
-
-array_loop2_end:
-    
-    # update that we need to check for falling blocks now
-    la $t9, falling_blocks
-    li $t8, 1            # Load the value 1 into $t1
-    sw $t8, 0($t9)       # Store 1 into falling_blocks
-    
-
-check2_4:
-    # Perform second block logic
-    add $t1, $s1, $zero       # Load the value of $s1 into $t1
-    addi $t2, $t1, 128        # $t2 = $t1 + 128
-    addi $t3, $t2, 128        # $t3 = $t2 + 128
-    addi $t4, $t3, 128        # $t4 = $t3 + 128
-
-    lw $t5, 0($t1)            # Load the word at $t1 into $t5
-    lw $t6, 0($t2)            # Load the color at $t2 into $t6
-    bne $t6, $t5, reset_block         # If $t6 != $t5, skip to end
-    lw $t6, 0($t3)            # Load the color at $t3 into $t6
-    bne $t6, $t5, reset_block         # If $t6 != $t5, skip to end
-    lw $t6, 0($t4)            # Load the color at $t4 into $t6
-    bne $t6, $t5, reset_block         # If $t6 != $t5, skip to end
-
-    # If all match, set to black
-    li $t7, 0                 # Load black color (value 0) into $t7
-    sw $t7, 0($t1)            # Store black at $t1
-    sw $t7, 0($t2)            # Store black at $t2
-    sw $t7, 0($t3)            # Store black at $t3
-    sw $t7, 0($t4)            # Store black at $t4
-    
-    
-li $t9, 0
-li $t8, 256
-la $t7, static_capsule_array
-array_loop1:
-    bgt $t9, $t8, array_loop1_end      # If $t9 > $t8, exit the loop
-
-    lw $t6, 0($t7) # store value of t7 at t6
-    
-    beq $t6, $t1, set_to_5
-    beq $t6, $t2, set_to_5
-    beq $t6, $t3, set_to_5
-    beq $t6, $t4, set_to_5
-    
-    j no_set_to5
-    set_to_5:
-    # set the 1 or 2 blocks in the array to 5
-    li $t5, 5
-    sw $t5, 0($t7)
-    
-    no_set_to5:
-    addi $t9, $t9, 1
-    addi $t7, $t7, 4
-    j array_loop1                # Repeat the loop
-
-array_loop1_end:
-
-    # update that we need to check for falling blocks now
-    la $t9, falling_blocks
-    li $t8, 1            # Load the value 1 into $t1
-    sw $t8, 0($t9)       # Store 1 into falling_blocks
+j reset_block
     
     
 reset_block:
@@ -1203,6 +1099,121 @@ skip_orientationR_check:
 
     # Step 4: Return to keyboard input handling
     j keyboard_input_exits      # Jump back to the keyboard input handling
+    
+    
+############################################################################
+#checking if any blocks are in a row
+############################################################################
+check_4:
+    # Perform first block logic
+    add $t1, $s0, $zero       # Load the value of $s0 into $t1
+    addi $t2, $t1, 128        # $t2 = $t1 + 128
+    addi $t3, $t2, 128        # $t3 = $t2 + 128
+    addi $t4, $t3, 128        # $t4 = $t3 + 128
+
+    lw $t5, 0($t1)            # Load the word at $t1 into $t5
+    lw $t6, 0($t2)            # Load the color at $t2 into $t6
+    bne $t6, $t5, check2_4         # If $t6 != $t5, skip to end
+    lw $t6, 0($t3)            # Load the color at $t3 into $t6
+    bne $t6, $t5, check2_4         # If $t6 != $t5, skip to end
+    lw $t6, 0($t4)            # Load the color at $t4 into $t6
+    bne $t6, $t5, check2_4         # If $t6 != $t5, skip to end
+
+    # If all match, set to black
+    li $t7, 0                 # Load black color (value 0) into $t7
+    sw $t7, 0($t1)            # Store black at $t1
+    sw $t7, 0($t2)            # Store black at $t2
+    sw $t7, 0($t3)            # Store black at $t3
+    sw $t7, 0($t4)            # Store black at $t4
+    
+li $t9, 0
+li $t8, 256
+la $t7, static_capsule_array
+array_loop2:
+    bgt $t9, $t8, array_loop2_end      # If $t9 > $t8, exit the loop
+
+    lw $t6, 0($t7) # store value of t7 at t6
+    
+    beq $t6, $t1, set_to_5_2
+    beq $t6, $t2, set_to_5_2
+    beq $t6, $t3, set_to_5_2
+    beq $t6, $t4, set_to_5_2
+    
+    j no_set2_to5
+    
+    set_to_5_2:
+    # set the 1 or 2 blocks in the array to 5
+    li $t5, 5
+    sw $t5, 0($t7)
+    
+    no_set2_to5:
+    addi $t9, $t9, 1
+    addi $t7, $t7, 4
+    j array_loop2                # Repeat the loop
+
+array_loop2_end:
+    
+    # update that we need to check for falling blocks now
+    la $t9, falling_blocks
+    li $t8, 1            # Load the value 1 into $t1
+    sw $t8, 0($t9)       # Store 1 into falling_blocks
+    
+
+check2_4:
+    # Perform second block logic
+    add $t1, $s1, $zero       # Load the value of $s1 into $t1
+    addi $t2, $t1, 128        # $t2 = $t1 + 128
+    addi $t3, $t2, 128        # $t3 = $t2 + 128
+    addi $t4, $t3, 128        # $t4 = $t3 + 128
+
+    lw $t5, 0($t1)            # Load the word at $t1 into $t5
+    lw $t6, 0($t2)            # Load the color at $t2 into $t6
+    bne $t6, $t5, reset_block         # If $t6 != $t5, skip to end
+    lw $t6, 0($t3)            # Load the color at $t3 into $t6
+    bne $t6, $t5, reset_block         # If $t6 != $t5, skip to end
+    lw $t6, 0($t4)            # Load the color at $t4 into $t6
+    bne $t6, $t5, reset_block         # If $t6 != $t5, skip to end
+
+    # If all match, set to black
+    li $t7, 0                 # Load black color (value 0) into $t7
+    sw $t7, 0($t1)            # Store black at $t1
+    sw $t7, 0($t2)            # Store black at $t2
+    sw $t7, 0($t3)            # Store black at $t3
+    sw $t7, 0($t4)            # Store black at $t4
+    
+    
+li $t9, 0
+li $t8, 256
+la $t7, static_capsule_array
+array_loop1:
+    bgt $t9, $t8, array_loop1_end      # If $t9 > $t8, exit the loop
+
+    lw $t6, 0($t7) # store value of t7 at t6
+    
+    beq $t6, $t1, set_to_5
+    beq $t6, $t2, set_to_5
+    beq $t6, $t3, set_to_5
+    beq $t6, $t4, set_to_5
+    
+    j no_set_to5
+    set_to_5:
+    # set the 1 or 2 blocks in the array to 5
+    li $t5, 5
+    sw $t5, 0($t7)
+    
+    no_set_to5:
+    addi $t9, $t9, 1
+    addi $t7, $t7, 4
+    j array_loop1                # Repeat the loop
+
+array_loop1_end:
+
+    # update that we need to check for falling blocks now
+    la $t9, falling_blocks
+    li $t8, 1            # Load the value 1 into $t1
+    sw $t8, 0($t9)       # Store 1 into falling_blocks
+    
+jr $ra
 
     
 quit:
