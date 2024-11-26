@@ -58,6 +58,10 @@ array_size:         .word 256      # Number of elements in the array
 
 falling_blocks: .word 0# a bool for checking if we are going to update based on falling blocks now, default to 0, otherwise true
 
+fall_countable: .word 10000 # a counter for triggering when the blocks fall
+fall_trigger: .word 0 # a number to add up to fall_countable to trigger falling block
+fall_speed: .word 1 # a number to add to fall trigger each time, +1 every time called
+
 ##############################################################################
 # Code
 ##############################################################################
@@ -276,30 +280,55 @@ game_loop:
     # Draw everything on a stack:
     jal draw_by_stack
     
+    # Add a half-second delay before falling blocks check
     # Check if falling_blocks is enabled
     la $t3, falling_blocks    # Load the address of falling_blocks
     lw $t4, 0($t3)            # Load the value of falling_blocks
-    beq $t4, 1, move_falling_blocks # If falling_blocks == 1, skip to move_falling_blocks
-
+    bne $t4, 1, no_delay # If falling_blocks == 1, skip to move_falling_blocks
+    small_delay:
+        li $s3, 100000        # Set a counter for the delay loop (adjust based on CPU speed)
+    delay_loop:
+        addi $s3, $s3, -1     # Decrement the delay counter
+        bnez $s3, delay_loop  # Continue looping until $s3 == 0
+    j move_falling_blocks
+    no_delay:
+    
     # Keyboard checks, also check for collision
     # Draw the block:
     jal draw_block
     lw $t0, ADDR_KBRD         # Load the keyboard base address into $t0
     lw $t2, 0($t0)            # Read the first word (status) from the keyboard
     beq $t2, 1, keyboard_input # If $t2 == 1 (key pressed), branch to keyboard_input
+    
+    # Increment fall_trigger by fall_speed and add 1 to fall_speed
+    la $t3, fall_speed        # Load address of fall_speed
+    lw $t4, 0($t3)            # Load fall_speed into $t4
+    la $t5, fall_trigger      # Load address of fall_trigger
+    lw $t6, 0($t5)            # Load fall_trigger into $t6
+
+    add $t6, $t6, $t4         # Increment fall_trigger by fall_speed
+    sw $t6, 0($t5)            # Store updated fall_trigger
+
+    addi $t4, $t4, 1          # Increment fall_speed by 1
+    sw $t4, 0($t3)            # Store updated fall_speed
+
+    # Check if fall_trigger >= fall_countable
+    la $t7, fall_countable    # Load address of fall_countable
+    lw $t8, 0($t7)            # Load fall_countable into $t8
+    slt $t9, $t8, $t6         # Set $t9 to 1 if fall_countable < fall_trigger
+    beq $t9, $zero, continue_game # If fall_trigger < fall_countable, skip resetting
+    
+    # Reset fall_speed and fall_trigger
+    li $t6, 0                 # Reset fall_trigger to 0
+    sw $t6, 0($t5)            # Store reset fall_trigger
+    
+    j move_down
+
+    continue_game:
 
     keyboard_done:
 
     falled:
-
-    fps_delay:
-    # Introduce a 60 FPS delay
-    li $t5, 20000             # Approximate delay for 16.67ms (adjust based on hardware)
-    li $t6, 0                 # Initialize delay counter
-
-    fps_wait:
-    addi $t6, $t6, 1          # Increment counter
-    bne $t6, $t5, fps_wait    # Wait until $t6 reaches $t5
 
 j game_loop
     
@@ -656,8 +685,11 @@ reset_block:
     la $t9, falling_blocks
     li $t8, 1            # Load the value 1 into $t1
     sw $t8, 0($t9)       # Store 1 into falling_blocks
-
     
+# reset the fall speed
+    la $t3, fall_speed        # Load address of fall_speed
+    li $t4, 1                 # Reset fall_speed to 1
+    sw $t4, 0($t3)            # Store reset fall_speed
 
     li $t1, 5
     sw $t1, BLOCK_ROW
@@ -756,6 +788,10 @@ move_falling_blocks:
 falling_loop:
 
 bgt $t9, $t8 falling_loop_end # loop ending after 256 tries
+
+li $t2, 0 # load 0 into t2
+lw $t1, 0($t0)
+beq $t1 $t2, falling_loop_end
 
 li $t2, 0x5 # load the value of 0x5 into t1
 lw $t1, 0($t0)
@@ -1169,6 +1205,24 @@ ge4_loop:
 
 li $t2, 0x0 # store black at that pixel location
 sw $t2, 0($t5)
+
+# the storage regsiter is alreayd loaded in to t8:
+la $t8 static_capsule_array
+change_storage_loop:
+
+lw $t4, 0($t8) # load the value at the pointer
+bne $t4, $t5,no_update_to_black # if the value is no the right one dont update to 5
+
+# other wise update to five
+li $t4, 5 #set 5
+sw $t4, 0($t8)
+
+no_update_to_black:
+li $t4, 0 # set t4 to 0
+lw $t3, 0($t8) # set t3 to the value at t8
+
+addi $t8, $t8, 4 # increment to the next thing on the array
+bne $t3, $t4, change_storage_loop
 
 add $t5, $t5, 128 # add the offsets
 
