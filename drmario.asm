@@ -275,8 +275,6 @@ game_loop:
     jal store_to_stack
     # Draw everything on a stack:
     jal draw_by_stack
-    # Draw the block:
-    jal draw_block
     
     # Check if falling_blocks is enabled
     la $t3, falling_blocks    # Load the address of falling_blocks
@@ -284,9 +282,20 @@ game_loop:
     beq $t4, 1, move_falling_blocks # If falling_blocks == 1, skip to move_falling_blocks
 
     # Keyboard checks, also check for collision
+    # Draw the block:
+    jal draw_block
     lw $t0, ADDR_KBRD         # Load the keyboard base address into $t0
     lw $t2, 0($t0)            # Read the first word (status) from the keyboard
     beq $t2, 1, keyboard_input # If $t2 == 1 (key pressed), branch to keyboard_input
+    
+    fps_delay:
+    # Introduce a 60 FPS delay
+    li $t5, 16670             # Approximate delay for 16.67ms (adjust based on hardware)
+    li $t6, 0                 # Initialize delay counter
+
+    fps_wait:
+    addi $t6, $t6, 1          # Increment counter
+    bne $t6, $t5, fps_wait    # Wait until $t6 reaches $t5
 
 keyboard_done:
 
@@ -842,51 +851,64 @@ move_falling_blocks:
     la $t0, static_capsule_array  # Base address of the array
 
 falling_loop:
-    lw $t1, 0($t0)                # Load the value at address 0($t0) into $t1
-    li $t2, 0x0                   # Load the value 0x0 into $t2
-    beq $t1, $t2, falling_loop_end # If the value at 0($t0) == 0x0, branch to falling_loop_end  
-    bgt $t9, $t8, falling_loop_end # If $t9 > $t8, exit the loop
 
-    # Load left and right elements for comparison
-    lw $t3, 0($t0)                # Left element (current)
-    lw $t4, 4($t0)                # Right element (next)
+bgt $t9, $t8 falling_loop_end # loop ending after 256 tries
 
-    # Case 1: Both left and right are 0x5
-    li $t5, 0x5                   # Load 0x5 into $t5
-    beq $t3, $t5, case1_check     # If left == 0x5, check for right
-    j case2                       # Otherwise, move to case 2
+li $t2, 0x5 # load the value of 0x5 into t1
+lw $t1, 0($t0)
+beq $t1, $t2, left_empty
 
-case1_check:
-    # Check if right == 0x5
-    bne $t4, $t5, case2          # If right != 0x5, move to case 2
-    j continue_loop              # Continue the loop
+lw $t1, 4($t0) # load the right side value
+beq $t1, $t2, right_empty
 
-case2:
-    # Case 2: Left is 0x5, right can be anything
-    bne $t3, $t5, case3          # If left != 0x5, move to case 3
+j continue_loop
 
-    # Calculate address of 0(right + 128)
-    addi $t6, $t0, 516           # Address of 0(right + 128), right is 4 bytes after left
-    lw $t7, 0($t6)               # Load the value at 0(right + 128) into $t7
+left_empty:
+# first case, where the twoblocks are completely erased, then jump to the next part
+lw $t1, 4($t0) #load the value of right (location) into t1
+beq $t1, $t2, continue_loop
 
-    # Check if 0(right + 128) == 0xD3D3D3
-    li $t8, 0xD3D3D3             # Load 0xD3D3D3 into $t8
-    bne $t7, $t8, continue_loop  # If the value is not 0xD3D3D3, skip to continue_loop
+# second case, where the left is empty, but right is not
+lw $t2, 0($t1) # get the color of the single block,
+lw $t3, 128($t1) # get the color of the single empty block under
 
-    # Set 0(right + 128) = 0xD3D3D3
-    sw $t8, 0($t6)               # Store 0xD3D3D3 at 0(right + 128)
+# check if its black:
+li $t5, 0x0
+bne $t3, $t5, continue_loop # then move the one block down
 
-    j continue_loop              # Continue to the next iteration
+#t2 will always be og color,
+#t1 will always be og location,
+#t5 is black
+sw $t2, 128($t1)
+sw $t5, 0($t1)
+addi $t1, $t1, 128
+sw $t1, 4($t0)
 
+j continue_loop
 
-case3:
-    # Case 3: Right is 0x5, left can be anything
-    beq $t4, $t5, continue_loop   # If right == 0x5, handle case 3
-    j case4                       # Otherwise, move to case 4
+right_empty:
 
-case4:
-    # Case 4: Both can be anything
-    # Default processing for case 4 (if any additional logic is needed)
+# first case, where the twoblocks are completely erased, then jump to the next part
+lw $t1, 0($t0) #load the value of left (location) into t1
+beq $t1, $t2, continue_loop
+
+# second case, where the right is empty, but left is not
+lw $t2, 0($t1) # get the color of the single block,
+lw $t3, 128($t1) # get the color of the single empty block under
+
+# check if its black:
+li $t5, 0x0
+bne $t3, $t5, continue_loop # then move the one block down
+
+#t2 will always be og color,
+#t1 will always be og location,
+#t5 is black
+sw $t2, 128($t1)
+sw $t5, 0($t1)
+addi $t1, $t1, 128
+sw $t1, 0($t0)
+
+j continue_loop
 
 continue_loop:
     # Move to the next index
@@ -897,7 +919,7 @@ continue_loop:
 falling_loop_end:
     # Exit the loop
     # Add any necessary cleanup or logic here
-    j falled                 # Jump to reset_block
+    j falled                
 
 
 
