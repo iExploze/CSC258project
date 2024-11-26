@@ -276,9 +276,6 @@ game_loop:
     # Draw everything on a stack:
     jal draw_by_stack
     
-    # check 4
-    jal check_4
-    
     # Check if falling_blocks is enabled
     la $t3, falling_blocks    # Load the address of falling_blocks
     lw $t4, 0($t3)            # Load the value of falling_blocks
@@ -290,19 +287,19 @@ game_loop:
     lw $t0, ADDR_KBRD         # Load the keyboard base address into $t0
     lw $t2, 0($t0)            # Read the first word (status) from the keyboard
     beq $t2, 1, keyboard_input # If $t2 == 1 (key pressed), branch to keyboard_input
-    
+
+    keyboard_done:
+
+    falled:
+
     fps_delay:
     # Introduce a 60 FPS delay
-    li $t5, 16670             # Approximate delay for 16.67ms (adjust based on hardware)
+    li $t5, 20000             # Approximate delay for 16.67ms (adjust based on hardware)
     li $t6, 0                 # Initialize delay counter
 
     fps_wait:
     addi $t6, $t6, 1          # Increment counter
     bne $t6, $t5, fps_wait    # Wait until $t6 reaches $t5
-
-keyboard_done:
-
-falled:
 
 j game_loop
     
@@ -649,10 +646,18 @@ store_to_new_block:
         sw $s1, 0($t6)                # Store $s1 in the next slot
     
     #############################################################################
-j reset_block
+    
+jal check_4
     
     
 reset_block:
+
+# update that we need to check for falling blocks now
+    la $t9, falling_blocks
+    li $t8, 1            # Load the value 1 into $t1
+    sw $t8, 0($t9)       # Store 1 into falling_blocks
+
+    
 
     li $t1, 5
     sw $t1, BLOCK_ROW
@@ -730,13 +735,15 @@ beq $s0, $t3, quit        # If $s0 == $t3, jump to quit
 # Check if $s0 equals $t4
 beq $s0, $t4, quit        # If $s0 == $t4, jump to quit
     
-jr $ra
+j keyboard_done
 
    
 ####################################################################################################
 # Checking falling blocks + moving them                                                            #
 ####################################################################################################
 move_falling_blocks:
+    jal check_4
+
     # update that we need to check for falling blocks now
     la $t9, falling_blocks
     li $t8, 0            # Load the value 1 into $t1
@@ -1105,114 +1112,72 @@ skip_orientationR_check:
 #checking if any blocks are in a row
 ############################################################################
 check_4:
-    # Perform first block logic
-    add $t1, $s0, $zero       # Load the value of $s0 into $t1
-    addi $t2, $t1, 128        # $t2 = $t1 + 128
-    addi $t3, $t2, 128        # $t3 = $t2 + 128
-    addi $t4, $t3, 128        # $t4 = $t3 + 128
+    
+lw $t0, ADDR_DSPL #load the address, and also acts as a point itself
+la $t8, static_capsule_array
+lw $t9, STACK_MAX # the counter max
 
-    lw $t5, 0($t1)            # Load the word at $t1 into $t5
-    lw $t6, 0($t2)            # Load the color at $t2 into $t6
-    bne $t6, $t5, check2_4         # If $t6 != $t5, skip to end
-    lw $t6, 0($t3)            # Load the color at $t3 into $t6
-    bne $t6, $t5, check2_4         # If $t6 != $t5, skip to end
-    lw $t6, 0($t4)            # Load the color at $t4 into $t6
-    bne $t6, $t5, check2_4         # If $t6 != $t5, skip to end
+check_4_loop:
+beq $t0, $t9, check_4_over # checked over every pixel
 
-    # If all match, set to black
-    li $t7, 0                 # Load black color (value 0) into $t7
-    sw $t7, 0($t1)            # Store black at $t1
-    sw $t7, 0($t2)            # Store black at $t2
-    sw $t7, 0($t3)            # Store black at $t3
-    sw $t7, 0($t4)            # Store black at $t4
-    
-li $t9, 0
-li $t8, 256
-la $t7, static_capsule_array
-array_loop2:
-    bgt $t9, $t8, array_loop2_end      # If $t9 > $t8, exit the loop
+li $t7, 0, #temp counter for tracking atleast 4
+addi $t5, $t0, 0 # t5 is the first row to be checked
+lw $t4, 0($t0) # get the default color
 
-    lw $t6, 0($t7) # store value of t7 at t6
-    
-    beq $t6, $t1, set_to_5_2
-    beq $t6, $t2, set_to_5_2
-    beq $t6, $t3, set_to_5_2
-    beq $t6, $t4, set_to_5_2
-    
-    j no_set2_to5
-    
-    set_to_5_2:
-    # set the 1 or 2 blocks in the array to 5
-    li $t5, 5
-    sw $t5, 0($t7)
-    
-    no_set2_to5:
-    addi $t9, $t9, 1
-    addi $t7, $t7, 4
-    j array_loop2                # Repeat the loop
+lw $t2, color_red
+beq $t4, $t2, check_rows
 
-array_loop2_end:
-    
-    # update that we need to check for falling blocks now
-    la $t9, falling_blocks
-    li $t8, 1            # Load the value 1 into $t1
-    sw $t8, 0($t9)       # Store 1 into falling_blocks
-    
+lw $t2, color_yellow
+beq $t4, $t2, check_rows
 
-check2_4:
-    # Perform second block logic
-    add $t1, $s1, $zero       # Load the value of $s1 into $t1
-    addi $t2, $t1, 128        # $t2 = $t1 + 128
-    addi $t3, $t2, 128        # $t3 = $t2 + 128
-    addi $t4, $t3, 128        # $t4 = $t3 + 128
+lw $t2, color_blue
+beq $t4, $t2, check_rows
 
-    lw $t5, 0($t1)            # Load the word at $t1 into $t5
-    lw $t6, 0($t2)            # Load the color at $t2 into $t6
-    bne $t6, $t5, reset_block         # If $t6 != $t5, skip to end
-    lw $t6, 0($t3)            # Load the color at $t3 into $t6
-    bne $t6, $t5, reset_block         # If $t6 != $t5, skip to end
-    lw $t6, 0($t4)            # Load the color at $t4 into $t6
-    bne $t6, $t5, reset_block         # If $t6 != $t5, skip to end
+j check_rows_over
 
-    # If all match, set to black
-    li $t7, 0                 # Load black color (value 0) into $t7
-    sw $t7, 0($t1)            # Store black at $t1
-    sw $t7, 0($t2)            # Store black at $t2
-    sw $t7, 0($t3)            # Store black at $t3
-    sw $t7, 0($t4)            # Store black at $t4
-    
-    
-li $t9, 0
-li $t8, 256
-la $t7, static_capsule_array
-array_loop1:
-    bgt $t9, $t8, array_loop1_end      # If $t9 > $t8, exit the loop
+check_rows:
+addi $t7, $t7, 1 # add a increment to checking 4
+add $t5, $t5, 128 # add the offsets
+lw $t3, 0($t5) # get teh color at t5
+bne $t3, $t4, check_rows_over
 
-    lw $t6, 0($t7) # store value of t7 at t6
-    
-    beq $t6, $t1, set_to_5
-    beq $t6, $t2, set_to_5
-    beq $t6, $t3, set_to_5
-    beq $t6, $t4, set_to_5
-    
-    j no_set_to5
-    set_to_5:
-    # set the 1 or 2 blocks in the array to 5
-    li $t5, 5
-    sw $t5, 0($t7)
-    
-    no_set_to5:
-    addi $t9, $t9, 1
-    addi $t7, $t7, 4
-    j array_loop1                # Repeat the loop
 
-array_loop1_end:
+j check_rows
 
-    # update that we need to check for falling blocks now
-    la $t9, falling_blocks
-    li $t8, 1            # Load the value 1 into $t1
-    sw $t8, 0($t9)       # Store 1 into falling_blocks
+
+check_rows_over:
+
+#do not use t0 t7 t8 t9
+# check if there was more than 4 blocks in a row
+
+li $t1, 4               # Load the immediate value 4 into $t1
+slt $t2, $t7, $t1       # Set $t2 to 1 if $t7 < $t1, otherwise $t2 = 0
+beq $t2, $zero, is_ge4  # If $t2 == 0 (i.e., $t7 >= $t1), branch to is_ge4
+addi $t0, $t0, 4 # increment to the next pixel
+
+
+# Code for when $t3 < 4
+j check_4_loop    # Skip to continue execution
+
+
+is_ge4:
+# start clearing also storing to the registers
+li $t1, 0 # the small counter variable for clearing
+move $t5, $t0 # load the bit 
+
+ge4_loop:
+
+li $t2, 0x0 # store black at that pixel location
+sw $t2, 0($t5)
+
+add $t5, $t5, 128 # add the offsets
+
+addi $t1, $t1, 1 # increment the counter for clearing
+bne $t1, $t7, ge4_loop
+
+j check_4_loop
     
+check_4_over:
 jr $ra
 
     
