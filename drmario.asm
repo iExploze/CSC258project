@@ -193,6 +193,364 @@ vertical2:
     bne $t9, $t8, vertical2
 
 ##############################################################################
+# Draw dr. Mario
+##############################################################################
+# li $t1, 0x006400
+# addi $t2, $t0, 988          #1
+# sw $t1, 0( $t2 )
+
+# addi $t2, $t0, 992          #2
+# sw $t1, 0( $t2 )
+
+# addi $t2, $t0, 996          #3
+# sw $t1, 0( $t2 )
+
+# addi $t2, $t0, 1000          #4
+# sw $t1, 0( $t2 )
+
+# addi $t2, $t0, 1004          #5
+# sw $t1, 0( $t2 )
+
+# addi $t2, $t0, 1008          #6
+# sw $t1, 0( $t2 )
+
+# addi $t2, $t0, 1012          #7
+# sw $t1, 0( $t2 )
+
+# addi $t2, $t0, 1016          #8
+# sw $t1, 0( $t2 )
+
+# addi $t2, $t0, 1020          #9
+# sw $t1, 0( $t2 )
+
+li $t1, 0xFFFFFF
+addi $t2, $t0, 1516
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0x425723
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFFFFF
+addi $t2, $t2, 116
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 8
+sw $t1, 0( $t2 )
+
+li $t1, 0x425723
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFD9AD
+addi $t2, $t2, 104
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFFFFF
+addi $t2, $t2, 12
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFD9AD
+addi $t2, $t2, 100
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0x425723
+addi $t2, $t2, 8
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFD9AD
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0x425723
+addi $t2, $t2, 8
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFFFFF
+addi $t2, $t2, 96
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFD9AD
+addi $t2, $t2, 8
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFFFFF
+addi $t2, $t2, 8
+sw $t1, 0( $t2 )
+
+li $t1, 0x425723
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFD9AD
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFFFFF
+addi $t2, $t2, 96
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFD9AD
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFFFFF
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFD9AD
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0x425723
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFD9AD
+addi $t2, $t2, 108
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0x425723
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFD9AD
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0x425723
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFD9AD
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFFFFF
+addi $t2, $t2, 100
+sw $t1, 0( $t2 )
+
+li $t1, 0x425723
+addi $t2, $t2, 8
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFD9AD
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0x425723
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFFFFF
+addi $t2, $t2, 100
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFD9AD
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 8
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFFFFF
+addi $t2, $t2, 112
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 8
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 8
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 104
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 16
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 8
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 104
+sw $t1, 0( $t2 )
+
+li $t1, 0x425723
+addi $t2, $t2, 8
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFFFFF
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 8
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 108
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0x425723
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFFFFF
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0x425723
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFFFFF
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 104
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFD9AD
+addi $t2, $t2, 8
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFFFFF
+addi $t2, $t2, 8
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 112
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 8
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 112
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 8
+sw $t1, 0( $t2 )
+
+li $t1, 0xFFD9AD
+addi $t2, $t2, 104
+sw $t1, 0( $t2 )
+
+li $t1, 0x425723
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 20
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 100
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 8
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+addi $t2, $t2, 4
+sw $t1, 0( $t2 )
+
+##############################################################################
 # Draw random virus on the board
 ##############################################################################
 li $t8, 4
@@ -1236,5 +1594,1059 @@ jr $ra
 
     
 quit:
+    
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 896
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t0, 908
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 16
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 16
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 16
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 12
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 12
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    
+    addi $t2, $t2, 12
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 24
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 28
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 12
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 16
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 12
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 12
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 12
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 12
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 32
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 16
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 16
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 16
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 16
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 16
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    
+    add $t2, $t2, 256
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 12
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 12
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 16
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 12
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 16
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 16
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 16
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 28
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 16
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 16
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 12
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 12
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 16
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 12
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 16
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 12
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 12
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 28
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 12
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 16
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 16
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xEADB1C
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    li $t1, 0xDF702B
+    addi $t2, $t2, 12
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 24
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 20
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 12
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
     li $v0, 10                 # Syscall to terminate the program
     syscall
