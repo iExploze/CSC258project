@@ -58,7 +58,7 @@ array_size:         .word 256      # Number of elements in the array
 
 falling_blocks: .word 0# a bool for checking if we are going to update based on falling blocks now, default to 0, otherwise true
 
-fall_countable: .word 10000 # a counter for triggering when the blocks fall
+fall_countable: .word 100000 # a counter for triggering when the blocks fall
 fall_trigger: .word 0 # a number to add up to fall_countable to trigger falling block
 fall_speed: .word 1 # a number to add to fall trigger each time, +1 every time called
 
@@ -270,10 +270,9 @@ end_init:
 
 
 game_loop:
-    # Step 1a: Check if key has been pressed
-    li $v0, 32                # Syscall code for printing an integer in binary
-	li $a0, 1                 # Pass the integer 1 to print in binary
-	syscall
+    
+
+skip_music:
 
     # Store everything on a stack:
     jal store_to_stack
@@ -296,6 +295,11 @@ game_loop:
     # Keyboard checks, also check for collision
     # Draw the block:
     jal draw_block
+    
+    li $v0, 32                # Syscall code for printing an integer in binary
+	li $a0, 1                 # Pass the integer 1 to print in binary
+	syscall
+    
     lw $t0, ADDR_KBRD         # Load the keyboard base address into $t0
     lw $t2, 0($t0)            # Read the first word (status) from the keyboard
     beq $t2, 1, keyboard_input # If $t2 == 1 (key pressed), branch to keyboard_input
@@ -481,6 +485,14 @@ clear_column:
     jr $ra                     # Return to caller
     
 keyboard_input:
+# play sound
+    li $a0, 100
+    li $a1, 1
+    li $a2, 124
+    li $a3, 126
+    li $v0, 31
+    syscall
+
     # Get the ASCII code of the pressed key
     lw $a0, 4($t0)             # Load the ASCII code from the keyboard
 
@@ -774,6 +786,13 @@ j keyboard_done
 # Checking falling blocks + moving them                                                            #
 ####################################################################################################
 move_falling_blocks:
+# okay some sounds
+    li $a0, 100
+    li $a1, 1
+    li $a2, 124
+    li $a3, 126
+    li $v0, 31
+    syscall
     jal check_4
 
     # update that we need to check for falling blocks now
@@ -1202,6 +1221,13 @@ li $t1, 0 # the small counter variable for clearing
 move $t5, $t0 # load the bit 
 
 ge4_loop:
+
+    li $a0, 100
+    li $a1, 1
+    li $a2, 124
+    li $a3, 126
+    li $v0, 31
+    syscall
 
 li $t2, 0x0 # store black at that pixel location
 sw $t2, 0($t5)
