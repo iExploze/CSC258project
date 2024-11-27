@@ -1057,7 +1057,7 @@ keyboard_input:
     li $a0, 50
     li $a1, 10
     li $a2, 100
-    li $a3, 127
+    li $a3, 50
     li $v0, 31
     syscall
 
@@ -1393,7 +1393,7 @@ move_falling_blocks:
     li $a0, 100
     li $a1, 1
     li $a2, 20
-    li $a3, 126
+    li $a3, 55
     li $v0, 31
     syscall
     jal check_4
@@ -1828,7 +1828,7 @@ ge4_loop:
     li $a0, 25
     li $a1, 1000
     li $a2, 10
-    li $a3, 126
+    li $a3, 127
     li $v0, 31
     syscall
 
