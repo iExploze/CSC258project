@@ -776,12 +776,36 @@ jr $ra
 
 # Main function to draw the score
 draw_score:
+    # first we need to clear a black part for drawing at all
+    li $t2, 5              # Set outer loop counter to 5 (number of iterations)
+    li $t3, 0     
+    li $t0, 0x10008064     # Initialize $t0 to 0x10008100
+
+outer_loop_start:
+    li $t1, 7
+    li $t6, 0
+
+inner_loop_start:
+    li $t4, 0x0      
+    sw $t4, 0($t0)         # Store color at the memory location pointed by $t0
+
+    addi $t0, $t0, 4       # Increment $t0 by 4 (next memory location)
+    addi $t6, $t6, 1
+    bne $t6, $t1, inner_loop_start # Continue inner loop if $t0 <= $t1
+
+    # Outer loop update
+    addi $t0, $t0, 100     # Increment offset by 100
+    addi $t3, $t3, 1
+    bne $t2, $t3, outer_loop_start # Continue outer loop if $t2 > 0
+
     lw $t0, total_score     # Load total_score into $t0
     li $t1, 99              # Set $t1 to max score (99)
     ble $t0, $t1, draw_continue # If total_score <= 99, continue
     jal quit                # Call quit if total_score > 99
 
 draw_continue:
+    
+
     # Calculate tens and units place
     li $t2, 10              # Set $t2 to divisor (10)
     div $t0, $t2            # Divide $t0 by 10
@@ -880,10 +904,10 @@ units_9:
     
 keyboard_input:
 # play sound
-    li $a0, 100
-    li $a1, 1
-    li $a2, 124
-    li $a3, 126
+    li $a0, 50
+    li $a1, 10
+    li $a2, 100
+    li $a3, 127
     li $v0, 31
     syscall
 
@@ -1619,10 +1643,10 @@ li $t1, 0 # the small counter variable for clearing
 move $t5, $t0 # load the bit 
 
 ge4_loop:
-
-    li $a0, 100
-    li $a1, 1
-    li $a2, 124
+    # some clear sounds
+    li $a0, 25
+    li $a1, 1000
+    li $a2, 10
     li $a3, 126
     li $v0, 31
     syscall
