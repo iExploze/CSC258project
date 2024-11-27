@@ -69,6 +69,8 @@ fall_countable: .word 100000 # a counter for triggering when the blocks fall
 fall_trigger: .word 0 # a number to add up to fall_countable to trigger falling block
 fall_speed: .word 1 # a number to add to fall trigger each time, +1 every time called
 
+total_score: .word 0 # a track for keeping track of the score
+
 ##############################################################################
 # Code
 ##############################################################################
@@ -1658,80 +1660,569 @@ check_4_over:
 jr $ra
 
 
-# draw_pre_block1:
-    # #draw the first block's preview
-    # li $v0, 42
-    # li $a0, 0               # set minimum
-    # li $a1, 3               # set maximum
-    # syscall
-    # # get a random number from [0,2] and store it in $a0
+draw_score_tens_place_0:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 100
     
-    # beq $a0, 0, color_red_case_p1      # If $a0 is 0, jump to color red case
-    # beq $a0, 1, color_yellow_case_p1   # If $a0 is 1, jump to color yellow case
-    # beq $a0, 2, color_blue_case_p1     # If $a0 is 2, jump to color blue case
-
-# color_red_case_p1:  
-    # la $t7, COLOR1
-    # lw $t3, color_red
-    # sw $t3, 0($t7)
-    # lw $t1, pre_color_red
-    # j case_done_p1
-
-# color_yellow_case_p1:
-    # la $t7, COLOR1
-    # lw $t3, color_yellow
-    # sw $t3, 0($t7)
-    # lw $t1, pre_color_yellow
-    # j case_done_p1
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
     
-# color_blue_case_p1:
-    # la $t7, COLOR1
-    # lw $t3, color_blue
-    # sw $t3, 0($t7)
-    # lw $t1, pre_color_blue
-    # j case_done_p1
-    
-# case_done_p1:
-    # addi $t2, $t0, 1500
-    # sw $t1, 0( $t2 )
+jr $ra
 
-
-# draw_pre_block2:
-    # li $v0, 42
-    # li $a0, 0               # set minimum
-    # li $a1, 3               # set maximum
-    # syscall
-    # # get a random number from [0,2] and store it in $a0
+draw_score_tens_place_1:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 100
     
-    # beq $a0, 0, color_red_case_p2      # If $a0 is 0, jump to color red case
-    # beq $a0, 1, color_yellow_case_p2   # If $a0 is 1, jump to color yellow case
-    # beq $a0, 2, color_blue_case_p2     # If $a0 is 2, jump to color blue case
-
-# color_red_case_p2:  
-    # la $t7, COLOR2
-    # lw $t3, color_red
-    # sw $t3, 0($t7)
-    # lw $t1, pre_color_red
-    # j case_done_p2
-
-# color_yellow_case_p2:
-    # la $t7, COLOR2
-    # lw $t3, color_yellow
-    # sw $t3, 0($t7)
-    # lw $t1, pre_color_yellow
-    # j case_done_p2
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 124
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
     
-# color_blue_case_p2:
-    # la $t7, COLOR2
-    # lw $t3, color_blue
-    # sw $t3, 0($t7)
-    # lw $t1, pre_color_blue
-    # j case_done_p2
+jr $ra
+
+draw_score_tens_place_2:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 100
     
-# case_done_p2:
-    # addi $t2, $t2, 4
-    # sw $t1, 0( $t2 )
-# jr $ra
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+    
+draw_score_tens_place_3:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 100
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+    
+draw_score_tens_place_4:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 100
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    
+jr $ra
+    
+draw_score_tens_place_5:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 100
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+
+jr $ra
+
+draw_score_tens_place_6:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 100
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+
+draw_score_tens_place_7:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 100
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    
+jr $ra
+
+draw_score_tens_place_8:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 100
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+
+draw_score_tens_place_9:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 100
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+    
+draw_score_unit_place_0:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 116
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+
+draw_score_unit_place_1:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 116
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 124
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+    
+draw_score_unit_place_2:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 116
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+    
+draw_score_unit_place_3:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 116
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+
+draw_score_unit_place_4:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 116
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    
+jr $ra
+
+draw_score_unit_place_5:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 116
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+
+draw_score_unit_place_6:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 116
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+    
+draw_score_unit_place_7:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 116
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    
+jr $ra
+    
+draw_score_unit_place_8:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 116
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+    
+draw_score_unit_place_9:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 116
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
 
     
 quit:
