@@ -41,6 +41,8 @@ BLOCK_ROW2: .word 5         # initial row of the second block
 BLOCK_COL2: .word 13        # intial col of the second block
 COLOR1:   .word 0xFF0000           # the color of the block1
 COLOR2:   .word 0xFF0000            # the color of the block    
+pre_COLOR1:     .word 0xFF0000
+pre_COLOR2:     .word 0xFF0000
 
 color_red:    
     .word 0xFF0000
@@ -646,7 +648,61 @@ color_blue_case_i2:
 case_done_i2:
 
 
+get_preview_initial:
+    li $v0, 42
+    li $a0, 0               # set minimum
+    li $a1, 3               # set maximum
+    syscall
+    # get a random number from [0,2] and store it in $a0
+    
+    beq $a0, 0, color_red_case_ip1      # If $a0 is 0, jump to color red case
+    beq $a0, 1, color_yellow_case_ip1   # If $a0 is 1, jump to color yellow case
+    beq $a0, 2, color_blue_case_ip1     # If $a0 is 2, jump to color blue case
+    
+    
+color_red_case_ip1:
+    lw $t6, color_red               # store color red in $t6
+    j case_done_ip1
+color_yellow_case_ip1:
+    lw $t6, color_yellow            # store color yellow in $t6
+    j case_done_ip1
+color_blue_case_ip1:
+    lw $t6, color_blue              # store color blue in $t6
+    j case_done_ip1
+    
+case_done_ip1:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 1500
+    sw $t6, 0( $t2 )
+    sw $t6, pre_COLOR1
+    
+    
+    li $v0, 42
+    li $a0, 0               # set minimum
+    li $a1, 3               # set maximum
+    syscall
+    # get a random number from [0,2] and store it in $a0
+    
+    beq $a0, 0, color_red_case_ip2        # If $a0 is 0, jump to color red case
+    beq $a0, 1, color_yellow_case_ip2   # If $a0 is 1, jump to color yellow case
+    beq $a0, 2, color_blue_case_ip2     # If $a0 is 2, jump to color blue case
+    
+    
+color_red_case_ip2:  
+    lw $t6, color_red               # store color red in $t6
+    j case_done_ip2
+color_yellow_case_ip2:
+    lw $t6, color_yellow            # store color yellow in $t6
+    j case_done_ip2
+color_blue_case_ip2:
+    lw $t6, color_blue              # store color blue in $t6
+    j case_done_ip2
 
+case_done_ip2:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 1504
+    sw $t6, 0( $t2 )
+    sw $t6, pre_COLOR2
 
 # some init stuff for the static_capsule_array:
     # Initialize registers
@@ -689,6 +745,7 @@ game_loop:
     # Keyboard checks, also check for collision
     # Draw the block:
     jal draw_block
+
     
     li $v0, 32                # Syscall code for printing an integer in binary
 	li $a0, 1                 # Pass the integer 1 to print in binary
@@ -729,16 +786,16 @@ game_loop:
     falled:
 
 j game_loop
+
     
-
-
-
+    
 draw_block:
+
     # Load block's position and direction
     lw $t1, BLOCK_ROW          # Load block's row
     lw $t2, BLOCK_COL          # Load block's column
     lw $t9, COLOR1              # Load block's color
-    lw $t0, ADDR_DSPL          # Load base address of the display
+    lw $t0, ADDR_DSPL          # Load base address of the display+
     
     # calculating the offsets
     sll $t4, $t1, 7            # Multiply BLOCK_ROW by 128 using a shift
@@ -1113,6 +1170,7 @@ store_to_new_block:
 jal check_4
     
     
+    
 reset_block:
 
 # update that we need to check for falling blocks now
@@ -1135,7 +1193,12 @@ reset_block:
     sw $t1, BLOCK_ROW2
     li $t1, 13
     sw $t1, BLOCK_COL2
+    lw $t1, pre_COLOR1
+    sw $t1, COLOR1
+    lw $t1, pre_COLOR2
+    sw $t1, COLOR2
     
+get_preview:
     li $v0, 42
     li $a0, 0               # set minimum
     li $a1, 3               # set maximum
@@ -1158,7 +1221,10 @@ color_blue_case1:
     j case_done1
     
 case_done1:
-    sw $t6, COLOR1
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 1500
+    sw $t6, 0( $t2 )
+    sw $t6, pre_COLOR1
     
     
     li $v0, 42
@@ -1183,7 +1249,29 @@ color_blue_case2:
     j case_done2
 
 case_done2:
-    sw $t6, COLOR2
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 1504
+    sw $t6, 0( $t2 )
+    sw $t6, pre_COLOR2
+
+    
+    
+#check for ending
+li $t1, 0x100083ac
+li $t2, 0x100083b0
+li $t3, 0x100083b4
+li $t4, 0x100083b8
+
+# Check if $s0 equals $t1
+beq $s0, $t1, quit        # If $s0 == $t1, jump to quit
+# Check if $s0 equals $t2
+beq $s0, $t2, quit        # If $s0 == $t2, jump to quit
+# Check if $s0 equals $t3
+beq $s0, $t3, quit        # If $s0 == $t3, jump to quit
+# Check if $s0 equals $t4
+beq $s0, $t4, quit        # If $s0 == $t4, jump to quit
+    
+j keyboard_done
     
     
 #check for ending

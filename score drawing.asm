@@ -7,8 +7,7 @@ ADDR_DSPL:     .word       0x10008000
 main:
     
 game_loop:
-    jal draw_score_unit_place_9
-    j game_loop
+
 draw_score_tens_place_0:
     lw $t0, ADDR_DSPL
     addi $t2, $t0, 100
@@ -37,7 +36,6 @@ draw_score_tens_place_0:
     sw $t1 0( $t2 )
     addi $t2, $t2, 4
     sw $t1 0( $t2 )
-    j game_loop
 
 draw_score_tens_place_1:
     lw $t0, ADDR_DSPL
@@ -59,7 +57,6 @@ draw_score_tens_place_1:
     sw $t1 0( $t2 )
     addi $t2, $t2, 4
     sw $t1 0( $t2 )
-    j game_loop
 
 draw_score_tens_place_2:
     lw $t0, ADDR_DSPL
@@ -87,7 +84,6 @@ draw_score_tens_place_2:
     sw $t1 0( $t2 )
     addi $t2, $t2, 4
     sw $t1 0( $t2 )
-    j game_loop
     
 draw_score_tens_place_3:
     lw $t0, ADDR_DSPL
@@ -115,7 +111,6 @@ draw_score_tens_place_3:
     sw $t1 0( $t2 )
     addi $t2, $t2, 4
     sw $t1 0( $t2 )
-    j game_loop
     
 draw_score_tens_place_4:
     lw $t0, ADDR_DSPL
@@ -139,7 +134,6 @@ draw_score_tens_place_4:
     sw $t1 0( $t2 )
     addi $t2, $t2, 128
     sw $t1 0( $t2 )
-    j game_loop
     
 draw_score_tens_place_5:
     lw $t0, ADDR_DSPL
@@ -167,7 +161,6 @@ draw_score_tens_place_5:
     sw $t1 0( $t2 )
     addi $t2, $t2, 4
     sw $t1 0( $t2 )
-    j game_loop
 
 draw_score_tens_place_6:
     lw $t0, ADDR_DSPL
@@ -197,7 +190,6 @@ draw_score_tens_place_6:
     sw $t1 0( $t2 )
     addi $t2, $t2, 4
     sw $t1 0( $t2 )
-    j game_loop
 
 draw_score_tens_place_7:
     lw $t0, ADDR_DSPL
@@ -217,7 +209,6 @@ draw_score_tens_place_7:
     sw $t1 0( $t2 )
     addi $t2, $t2, 128
     sw $t1 0( $t2 )
-    j game_loop
 
 draw_score_tens_place_8:
     lw $t0, ADDR_DSPL
@@ -249,7 +240,6 @@ draw_score_tens_place_8:
     sw $t1 0( $t2 )
     addi $t2, $t2, 4
     sw $t1 0( $t2 )
-    j game_loop
 
 draw_score_tens_place_9:
     lw $t0, ADDR_DSPL
@@ -279,7 +269,6 @@ draw_score_tens_place_9:
     sw $t1 0( $t2 )
     addi $t2, $t2, 4
     sw $t1 0( $t2 )
-    j game_loop
     
 draw_score_unit_place_0:
     lw $t0, ADDR_DSPL
@@ -309,7 +298,6 @@ draw_score_unit_place_0:
     sw $t1 0( $t2 )
     addi $t2, $t2, 4
     sw $t1 0( $t2 )
-    j game_loop
 
 draw_score_unit_place_1:
     lw $t0, ADDR_DSPL
@@ -331,8 +319,7 @@ draw_score_unit_place_1:
     sw $t1 0( $t2 )
     addi $t2, $t2, 4
     sw $t1 0( $t2 )
-    j game_loop
-
+    
 draw_score_unit_place_2:
     lw $t0, ADDR_DSPL
     addi $t2, $t0, 116
@@ -359,7 +346,6 @@ draw_score_unit_place_2:
     sw $t1 0( $t2 )
     addi $t2, $t2, 4
     sw $t1 0( $t2 )
-    j game_loop
     
 draw_score_unit_place_3:
     lw $t0, ADDR_DSPL
@@ -387,7 +373,6 @@ draw_score_unit_place_3:
     sw $t1 0( $t2 )
     addi $t2, $t2, 4
     sw $t1 0( $t2 )
-    j game_loop
 
 draw_score_unit_place_4:
     lw $t0, ADDR_DSPL
@@ -411,7 +396,6 @@ draw_score_unit_place_4:
     sw $t1 0( $t2 )
     addi $t2, $t2, 128
     sw $t1 0( $t2 )
-    j game_loop
 
 draw_score_unit_place_5:
     lw $t0, ADDR_DSPL
@@ -439,7 +423,6 @@ draw_score_unit_place_5:
     sw $t1 0( $t2 )
     addi $t2, $t2, 4
     sw $t1 0( $t2 )
-    j game_loop
 
 draw_score_unit_place_6:
     lw $t0, ADDR_DSPL
@@ -469,7 +452,6 @@ draw_score_unit_place_6:
     sw $t1 0( $t2 )
     addi $t2, $t2, 4
     sw $t1 0( $t2 )
-    j game_loop
     
 draw_score_unit_place_7:
     lw $t0, ADDR_DSPL
@@ -489,7 +471,6 @@ draw_score_unit_place_7:
     sw $t1 0( $t2 )
     addi $t2, $t2, 128
     sw $t1 0( $t2 )
-    j game_loop
     
 draw_score_unit_place_8:
     lw $t0, ADDR_DSPL
@@ -521,7 +502,6 @@ draw_score_unit_place_8:
     sw $t1 0( $t2 )
     addi $t2, $t2, 4
     sw $t1 0( $t2 )
-    j game_loop
     
 draw_score_unit_place_9:
     lw $t0, ADDR_DSPL
@@ -551,4 +531,3 @@ draw_score_unit_place_9:
     sw $t1 0( $t2 )
     addi $t2, $t2, 4
     sw $t1 0( $t2 )
-    j game_loop
