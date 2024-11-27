@@ -48,6 +48,13 @@ color_yellow:
     .word 0xFFFF00
 color_blue:   
     .word 0x0000FF
+
+pre_color_red:
+    .word 0xFE0000
+pre_color_yellow:
+    .word 0xFFFE00
+pre_color_blue:
+    .word 0x0000FE
     
 virus_array: .space 4    # array for the location of the viruses
 static_capsule_array: .space 1024 # array for the location of the capsules,
@@ -195,34 +202,6 @@ vertical2:
 ##############################################################################
 # Draw dr. Mario
 ##############################################################################
-# li $t1, 0x006400
-# addi $t2, $t0, 988          #1
-# sw $t1, 0( $t2 )
-
-# addi $t2, $t0, 992          #2
-# sw $t1, 0( $t2 )
-
-# addi $t2, $t0, 996          #3
-# sw $t1, 0( $t2 )
-
-# addi $t2, $t0, 1000          #4
-# sw $t1, 0( $t2 )
-
-# addi $t2, $t0, 1004          #5
-# sw $t1, 0( $t2 )
-
-# addi $t2, $t0, 1008          #6
-# sw $t1, 0( $t2 )
-
-# addi $t2, $t0, 1012          #7
-# sw $t1, 0( $t2 )
-
-# addi $t2, $t0, 1016          #8
-# sw $t1, 0( $t2 )
-
-# addi $t2, $t0, 1020          #9
-# sw $t1, 0( $t2 )
-
 li $t1, 0xFFFFFF
 addi $t2, $t0, 1516
 sw $t1, 0( $t2 )
@@ -605,8 +584,67 @@ case_done0:
 ##################################################################################################
 #above this is all the borders,  its a pile of shitcode now, dont touch                          #
 ##################################################################################################
+get_initial_block1_color:
+    li $v0, 42
+    li $a0, 0               # set minimum
+    li $a1, 3               # set maximum
+    syscall
+    # get a random number from [0,2] and store it in $a0
+    
+    beq $a0, 0, color_red_case_i1   # If $a0 is 0, jump to color red case
+    beq $a0, 1, color_yellow_case_i1   # If $a0 is 1, jump to color yellow case
+    beq $a0, 2, color_blue_case_i1     # If $a0 is 2, jump to color blue case
+    
+color_red_case_i1:  
+    la $t7, COLOR1
+    lw $t3, color_red
+    sw $t3, 0($t7)
+    j get_initial_block2_color
 
-# first store the virus and the border that are not droppable to the stack:
+color_yellow_case_i1:
+    la $t7, COLOR1
+    lw $t3, color_yellow
+    sw $t3, 0($t7)
+    j get_initial_block2_color
+    
+color_blue_case_i1:
+    la $t7, COLOR1
+    lw $t3, color_blue
+    sw $t3, 0($t7)
+    j get_initial_block2_color
+
+get_initial_block2_color:
+    li $v0, 42
+    li $a0, 0               # set minimum
+    li $a1, 3               # set maximum
+    syscall
+    # get a random number from [0,2] and store it in $a0
+    
+    beq $a0, 0, color_red_case_i2   # If $a0 is 0, jump to color red case
+    beq $a0, 1, color_yellow_case_i2   # If $a0 is 1, jump to color yellow case
+    beq $a0, 2, color_blue_case_i2     # If $a0 is 2, jump to color blue case
+    
+color_red_case_i2:  
+    la $t7, COLOR1
+    lw $t3, color_red
+    sw $t3, 0($t7)
+    j case_done_i2
+
+color_yellow_case_i2:
+    la $t7, COLOR1
+    lw $t3, color_yellow
+    sw $t3, 0($t7)
+    j case_done_i2
+    
+color_blue_case_i2:
+    la $t7, COLOR1
+    lw $t3, color_blue
+    sw $t3, 0($t7)
+    j case_done_i2
+case_done_i2:
+
+
+
 
 # some init stuff for the static_capsule_array:
     # Initialize registers
@@ -692,6 +730,7 @@ j game_loop
     
 
 
+
 draw_block:
     # Load block's position and direction
     lw $t1, BLOCK_ROW          # Load block's row
@@ -726,7 +765,7 @@ draw_block:
     sw $t9, 0($t6)             # Store the color at the calculated address
     # also store it for later comparison
     add $s1, $t6, $zero
-
+    
 jr $ra
 
 
@@ -1071,7 +1110,7 @@ reset_block:
     beq $a0, 2, color_blue_case1     # If $a0 is 2, jump to color blue case
     
     
-color_red_case1:  
+color_red_case1:
     lw $t6, color_red               # store color red in $t6
     j case_done1
 color_yellow_case1:
@@ -1592,8 +1631,105 @@ j check_4_loop
 check_4_over:
 jr $ra
 
+
+# draw_pre_block1:
+    # #draw the first block's preview
+    # li $v0, 42
+    # li $a0, 0               # set minimum
+    # li $a1, 3               # set maximum
+    # syscall
+    # # get a random number from [0,2] and store it in $a0
+    
+    # beq $a0, 0, color_red_case_p1      # If $a0 is 0, jump to color red case
+    # beq $a0, 1, color_yellow_case_p1   # If $a0 is 1, jump to color yellow case
+    # beq $a0, 2, color_blue_case_p1     # If $a0 is 2, jump to color blue case
+
+# color_red_case_p1:  
+    # la $t7, COLOR1
+    # lw $t3, color_red
+    # sw $t3, 0($t7)
+    # lw $t1, pre_color_red
+    # j case_done_p1
+
+# color_yellow_case_p1:
+    # la $t7, COLOR1
+    # lw $t3, color_yellow
+    # sw $t3, 0($t7)
+    # lw $t1, pre_color_yellow
+    # j case_done_p1
+    
+# color_blue_case_p1:
+    # la $t7, COLOR1
+    # lw $t3, color_blue
+    # sw $t3, 0($t7)
+    # lw $t1, pre_color_blue
+    # j case_done_p1
+    
+# case_done_p1:
+    # addi $t2, $t0, 1500
+    # sw $t1, 0( $t2 )
+
+
+# draw_pre_block2:
+    # li $v0, 42
+    # li $a0, 0               # set minimum
+    # li $a1, 3               # set maximum
+    # syscall
+    # # get a random number from [0,2] and store it in $a0
+    
+    # beq $a0, 0, color_red_case_p2      # If $a0 is 0, jump to color red case
+    # beq $a0, 1, color_yellow_case_p2   # If $a0 is 1, jump to color yellow case
+    # beq $a0, 2, color_blue_case_p2     # If $a0 is 2, jump to color blue case
+
+# color_red_case_p2:  
+    # la $t7, COLOR2
+    # lw $t3, color_red
+    # sw $t3, 0($t7)
+    # lw $t1, pre_color_red
+    # j case_done_p2
+
+# color_yellow_case_p2:
+    # la $t7, COLOR2
+    # lw $t3, color_yellow
+    # sw $t3, 0($t7)
+    # lw $t1, pre_color_yellow
+    # j case_done_p2
+    
+# color_blue_case_p2:
+    # la $t7, COLOR2
+    # lw $t3, color_blue
+    # sw $t3, 0($t7)
+    # lw $t1, pre_color_blue
+    # j case_done_p2
+    
+# case_done_p2:
+    # addi $t2, $t2, 4
+    # sw $t1, 0( $t2 )
+# jr $ra
+
     
 quit:
+    
+    clear_screen_GE:
+        lw $t0, ADDR_DSPL
+        li $t1, 0x000000
+        li $t3, 0
+        li $t4, 64
+
+    clear_row_GE:
+        mul $t2, $t3, 128
+        add $t2, $t2, $t0
+        li $t9, 0
+        li $t8, 64
+    
+    clear_column_GE:
+        sw $t1, 0($t2)
+        addi $t2, $t2, 4
+        addi $t9, $t9, 1
+        bne $t9, $t8, clear_column_GE
+    
+        addi $t3, $t3, 1
+        bne $t3, $t4, clear_row_GE
     
     lw $t0, ADDR_DSPL
     addi $t2, $t0, 896
