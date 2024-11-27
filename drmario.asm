@@ -81,6 +81,99 @@ total_score: .word 0 # a track for keeping track of the score
 
     # Run the game.
 main:
+#reset everything at start too:
+
+# play some start sound
+    li $a0, 75
+    li $a1, 100
+    li $a2, 99
+    li $a3, 127
+    li $v0, 31
+    syscall
+
+clear_screen:
+        lw $t0, ADDR_DSPL
+        li $t1, 0x000000
+        li $t3, 0
+        li $t4, 64
+
+    clear_row:
+        mul $t2, $t3, 128
+        add $t2, $t2, $t0
+        li $t9, 0
+        li $t8, 64
+    
+    clear_column:
+        sw $t1, 0($t2)
+        addi $t2, $t2, 4
+        addi $t9, $t9, 1
+        bne $t9, $t8, clear_column
+    
+        addi $t3, $t3, 1
+        bne $t3, $t4, clear_row
+
+# Reset block positions and direction
+    li $t0, 5
+    la $t1, BLOCK_ROW
+    sw $t0, 0($t1)         # BLOCK_ROW = 5
+    la $t1, BLOCK_ROW2
+    sw $t0, 0($t1)         # BLOCK_ROW2 = 5
+
+    li $t0, 12
+    la $t1, BLOCK_COL
+    sw $t0, 0($t1)         # BLOCK_COL = 12
+
+    li $t0, 13
+    la $t1, BLOCK_COL2
+    sw $t0, 0($t1)         # BLOCK_COL2 = 13
+
+    li $t0, 0
+    la $t1, BLOCK_DIR
+    sw $t0, 0($t1)         # BLOCK_DIR = 0
+
+    # Reset colors
+    li $t0, 0xFF0000
+    la $t1, COLOR1
+    sw $t0, 0($t1)         # COLOR1 = 0xFF0000
+    la $t1, COLOR2
+    sw $t0, 0($t1)         # COLOR2 = 0xFF0000
+    la $t1, pre_COLOR1
+    sw $t0, 0($t1)         # pre_COLOR1 = 0xFF0000
+    la $t1, pre_COLOR2
+    sw $t0, 0($t1)         # pre_COLOR2 = 0xFF0000
+
+    # Clear virus and capsule arrays
+    la $t1, virus_array
+    li $t0, 0              # Reset value
+    sw $t0, 0($t1)         # Clear virus_array (single element)
+
+    la $t1, static_capsule_array
+    li $t2, 256            # Number of words to reset (1024 bytes / 4 bytes per word)
+clear_capsule_array:
+    sw $t0, 0($t1)
+    addi $t1, $t1, 4       # Move to the next word
+    addi $t2, $t2, -1
+    bnez $t2, clear_capsule_array
+
+    # Reset counters and booleans
+    la $t1, falling_blocks
+    sw $t0, 0($t1)         # falling_blocks = 0
+
+    li $t0, 100000
+    la $t1, fall_countable
+    sw $t0, 0($t1)         # fall_countable = 100000
+
+    li $t0, 0
+    la $t1, fall_trigger
+    sw $t0, 0($t1)         # fall_trigger = 0
+
+    li $t0, 1
+    la $t1, fall_speed
+    sw $t0, 0($t1)         # fall_speed = 1
+
+    li $t0, 0
+    la $t1, total_score
+    sw $t0, 0($t1)         # total_score = 0
 
 draw_border:
     li $t1, 0xD3D3D3             # Load a 16-bit color (0xD3D3) into $t1
@@ -1299,7 +1392,7 @@ move_falling_blocks:
 # okay some sounds
     li $a0, 100
     li $a1, 1
-    li $a2, 124
+    li $a2, 20
     li $a3, 126
     li $v0, 31
     syscall
@@ -3417,5 +3510,19 @@ quit:
     
     addi $t2, $t2, 4
     sw $t1 0( $t2 )
+    
+    # Button press check loop
+    button_check:
+        lw $t0, ADDR_KBRD         # Load the keyboard base address into $t0
+        lw $t2, 0($t0)            # Read the first word (status) from the keyboard 
+    
+        # Get the ASCII code of the pressed key
+        lw $a0, 4($t0)             # Load the ASCII code from the keyboard
+    
+        # Check which key was pressed
+        beq $a0, 0x72, main         # 'R' for Reset (ASCII 0x72)
+        j button_check           # Otherwise, keep checking
+    
+    
     li $v0, 10                 # Syscall to terminate the program
     syscall
