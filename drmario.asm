@@ -69,6 +69,8 @@ fall_countable: .word 100000 # a counter for triggering when the blocks fall
 fall_trigger: .word 0 # a number to add up to fall_countable to trigger falling block
 fall_speed: .word 1 # a number to add to fall trigger each time, +1 every time called
 
+total_score: .word 0 # a track for keeping track of the score
+
 ##############################################################################
 # Code
 ##############################################################################
@@ -667,13 +669,9 @@ end_init:
 
 game_loop:
     
-
-skip_music:
-
-    # Store everything on a stack:
-    jal store_to_stack
-    # Draw everything on a stack:
-    jal draw_by_stack
+    j draw_score
+    
+    draw_score_done:
     
     # Add a half-second delay before falling blocks check
     # Check if falling_blocks is enabled
@@ -772,121 +770,144 @@ draw_block:
     
 jr $ra
 
-
-
 #########################################################################################
-#draw everything on the stack onto the screen                                           #
+#draw the score out                                                                     #
 #########################################################################################
 
-draw_by_stack:
-    lw $t0, ADDR_DSPL
-    lw $t1, STACK_INITIAL            # Load TOP_LEFT into $t1 (start address)
-    lw $t2, STACK_MAX          # Load BOT_RIGHT into $t2 (end address)
-    move $t3, $t1               # Copy $t1 into $t3 (initialize counter)
+# Main function to draw the score
+draw_score:
+    # first we need to clear a black part for drawing at all
+    li $t2, 5              # Set outer loop counter to 5 (number of iterations)
+    li $t3, 0     
+    li $t0, 0x10008064     # Initialize $t0 to 0x10008100
 
-draw_loop_stack:
-    # Step 0: Check if $sp equals 0x7FFFFFFC
-    li $t6, 0x7FFFFFFC          # Load 0x7FFFFFFC into $t6
-    beq $sp, $t6, draw_done_stack  # If $sp == 0x7FFFFFFC, exit the loop
+outer_loop_start:
+    li $t1, 7
+    li $t6, 0
 
-    bgt $t3, $t2, draw_done_stack  # If $t3 > $t2, exit the loop
+inner_loop_start:
+    li $t4, 0x0      
+    sw $t4, 0($t0)         # Store color at the memory location pointed by $t0
+
+    addi $t0, $t0, 4       # Increment $t0 by 4 (next memory location)
+    addi $t6, $t6, 1
+    bne $t6, $t1, inner_loop_start # Continue inner loop if $t0 <= $t1
+
+    # Outer loop update
+    addi $t0, $t0, 100     # Increment offset by 100
+    addi $t3, $t3, 1
+    bne $t2, $t3, outer_loop_start # Continue outer loop if $t2 > 0
+
+    lw $t0, total_score     # Load total_score into $t0
+    li $t1, 99              # Set $t1 to max score (99)
+    ble $t0, $t1, draw_continue # If total_score <= 99, continue
+    jal quit                # Call quit if total_score > 99
+
+draw_continue:
     
-    # Step 1: Skip the fallable integer (1) on the stack
-    addi $sp, $sp, 4            # Skip the next value (fallable flag)
 
-    # Step 2: Pop the color location from the stack
-    lw $t5, 0($sp)              # Load the top of the stack (color) into $t4
-    addi $sp, $sp, 4            # Increment $sp to pop the location
+    # Calculate tens and units place
+    li $t2, 10              # Set $t2 to divisor (10)
+    div $t0, $t2            # Divide $t0 by 10
+    mflo $t4                # $t4 now holds the tens place
+    mfhi $t5                # $t5 now holds the units place
 
-    # Step 3: Pop the bitmap from the stack
-    lw $t4, 0($sp)              # Load the next value from the stack (bitmap location) into $t5
-    addi $sp, $sp, 4            # Increment $sp to pop the color
+# Helper to draw the tens place
+draw_score_tens:
+    # Determine the correct draw_score_tens_place_X function
+    beq $t4, 0, tens_0
+    beq $t4, 1, tens_1
+    beq $t4, 2, tens_2
+    beq $t4, 3, tens_3
+    beq $t4, 4, tens_4
+    beq $t4, 5, tens_5
+    beq $t4, 6, tens_6
+    beq $t4, 7, tens_7
+    beq $t4, 8, tens_8
+    beq $t4, 9, tens_9
 
-    # Step 4: Draw the color to the bitmap location
-    sw $t5, 0($t4)              # Store the color ($t5) at the bitmap location ($t4)
+tens_0:
+    jal draw_score_tens_place_0
+    j draw_score_units
+tens_1:
+    jal draw_score_tens_place_1
+    j draw_score_units
+tens_2:
+    jal draw_score_tens_place_2
+    j draw_score_units
+tens_3:
+    jal draw_score_tens_place_3
+    j draw_score_units
+tens_4:
+    jal draw_score_tens_place_4
+    j draw_score_units
+tens_5:
+    jal draw_score_tens_place_5
+    j draw_score_units
+tens_6:
+    jal draw_score_tens_place_6
+    j draw_score_units
+tens_7:
+    jal draw_score_tens_place_7
+    j draw_score_units
+tens_8:
+    jal draw_score_tens_place_8
+    j draw_score_units
+tens_9:
+    jal draw_score_tens_place_9
+    j draw_score_units
 
-    # Step 5: Increment the counter and loop again
-    addi $t3, $t3, 4            # Increment $t3 by 4
-    j draw_loop_stack           # Repeat the loop
-    
-draw_done_stack:
-    jr $ra                      # Return to the caller
+# Helper to draw the units place
+draw_score_units:
+    # Determine the correct draw_score_unit_place_X function
+    beq $t5, 0, units_0
+    beq $t5, 1, units_1
+    beq $t5, 2, units_2
+    beq $t5, 3, units_3
+    beq $t5, 4, units_4
+    beq $t5, 5, units_5
+    beq $t5, 6, units_6
+    beq $t5, 7, units_7
+    beq $t5, 8, units_8
+    beq $t5, 9, units_9
 
-
-################################################################################
-# store everything necessary onto the stack                                    #
-################################################################################
-
-store_to_stack:
-    # get the location of the block to not be stored into the stack:
-    # Load 1st block's position and direction
-    lw $t1, BLOCK_ROW          # Load block's row
-    lw $t2, BLOCK_COL          # Load block's column
-    lw $t0, ADDR_DSPL          # Load base address of the display
-
-    lw $t0, ADDR_DSPL
-    lw $t1, STACK_INITIAL            # Load TOP_LEFT into $t1 (start address)
-    lw $t2, STACK_MAX           # Load BOT_RIGHT into $t2 (end address)
-    
-    move $t3, $t1               # Copy $t1 into $t3 (initialize counter)
-
-store_loop_start:
-    bgt $t3, $t2, store_loop_end      # If $t3 > $t2, exit the loop
-
-    # stack storing, 1 for location, 1 for color, 1 for fallable
-    # Step 2: Push the location onto the stack
-    addi $sp, $sp, -4           # Allocate space on the stack for location
-    sw $t3, 0($sp)              # Store the calculated location on the stack
-    # Step 3: Load the color at the calculated location
-    lw $t7, 0($t3)              # Load the color at address $t6 into $t7
-    # Step 4: Push the color onto the stack
-    addi $sp, $sp, -4           # Allocate space on the stack for color
-    sw $t7, 0($sp)              # Store the color on the stack
-    # Step 5: Push the integer 1 onto the stack
-    li $t7, 0                   # Load the value 1 into $t8
-    addi $sp, $sp, -4           # Allocate space on the stack for the integer
-    sw $t7, 0($sp)              # Store the integer 1 on the stack
-    
-skip_iteration:
-    addi $t3, $t3, 4            # Increment $t3 by 4
-    j store_loop_start                # Repeat the loop
-
-store_loop_end:
-    jr $ra
-
-
-##############################Clearing screen whole################################
-clear_screen:
-    lw $t0, ADDR_DSPL          # Load the base address of the display
-    li $t1, 0x000000           # Black color (clear screen color)
-    li $t3, 0                  # Start row index
-    li $t4, 64                 # Total rows (64 for a 64x64 display)
-
-clear_row:
-    # Initialize starting address for the current row
-    mul $t2, $t3, 128          # Row offset: row * 128 bytes
-    add $t2, $t2, $t0          # Add the base address
-    li $t9, 0                  # Reset loop counter for columns
-    li $t8, 64                 # Total columns (64 for a 64x64 display)
-
-clear_column:
-    sw $t1, 0($t2)             # Store black color at the current pixel
-    addi $t2, $t2, 4           # Move to the next column (4 bytes per pixel)
-    addi $t9, $t9, 1           # Increment column counter
-    bne $t9, $t8, clear_column # Repeat until the end of the row
-
-    # Move to the next row
-    addi $t3, $t3, 1           # Increment row counter
-    bne $t3, $t4, clear_row    # Repeat until all rows are cleared
-
-    jr $ra                     # Return to caller
+units_0:
+    jal draw_score_unit_place_0
+    j draw_score_done
+units_1:
+    jal draw_score_unit_place_1
+    j draw_score_done
+units_2:
+    jal draw_score_unit_place_2
+    j draw_score_done
+units_3:
+    jal draw_score_unit_place_3
+    j draw_score_done
+units_4:
+    jal draw_score_unit_place_4
+    j draw_score_done
+units_5:
+    jal draw_score_unit_place_5
+    j draw_score_done
+units_6:
+    jal draw_score_unit_place_6
+    j draw_score_done
+units_7:
+    jal draw_score_unit_place_7
+    j draw_score_done
+units_8:
+    jal draw_score_unit_place_8
+    j draw_score_done
+units_9:
+    jal draw_score_unit_place_9
+    j draw_score_done
     
 keyboard_input:
 # play sound
-    li $a0, 100
-    li $a1, 1
-    li $a2, 124
-    li $a3, 126
+    li $a0, 50
+    li $a1, 10
+    li $a2, 100
+    li $a3, 127
     li $v0, 31
     syscall
 
@@ -1060,6 +1081,10 @@ skip_orientationD_check:
     j keyboard_input_exits      # Jump back to the keyboard input handling
     
 store_to_new_block:
+    # get some score for placing
+    lw $t2, total_score     # Load current total_score into $t0
+    addi $t2, $t2, 1        # Increment $t0 by 1
+    sw $t2, total_score     # Store the updated value back into total_score
     #store the block info inthe array: static_capsule_array
     
     # Load address of static_capsule_array into $t0
@@ -1618,16 +1643,21 @@ li $t1, 0 # the small counter variable for clearing
 move $t5, $t0 # load the bit 
 
 ge4_loop:
-
-    li $a0, 100
-    li $a1, 1
-    li $a2, 124
+    # some clear sounds
+    li $a0, 25
+    li $a1, 1000
+    li $a2, 10
     li $a3, 126
     li $v0, 31
     syscall
 
 li $t2, 0x0 # store black at that pixel location
 sw $t2, 0($t5)
+
+lw $t2, total_score     # Load current total_score into $t0
+addi $t2, $t2, 1        # Increment $t0 by 1
+sw $t2, total_score     # Store the updated value back into total_score
+
 
 # the storage regsiter is alreayd loaded in to t8:
 la $t8 static_capsule_array
@@ -1658,80 +1688,569 @@ check_4_over:
 jr $ra
 
 
-# draw_pre_block1:
-    # #draw the first block's preview
-    # li $v0, 42
-    # li $a0, 0               # set minimum
-    # li $a1, 3               # set maximum
-    # syscall
-    # # get a random number from [0,2] and store it in $a0
+draw_score_tens_place_0:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 100
     
-    # beq $a0, 0, color_red_case_p1      # If $a0 is 0, jump to color red case
-    # beq $a0, 1, color_yellow_case_p1   # If $a0 is 1, jump to color yellow case
-    # beq $a0, 2, color_blue_case_p1     # If $a0 is 2, jump to color blue case
-
-# color_red_case_p1:  
-    # la $t7, COLOR1
-    # lw $t3, color_red
-    # sw $t3, 0($t7)
-    # lw $t1, pre_color_red
-    # j case_done_p1
-
-# color_yellow_case_p1:
-    # la $t7, COLOR1
-    # lw $t3, color_yellow
-    # sw $t3, 0($t7)
-    # lw $t1, pre_color_yellow
-    # j case_done_p1
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
     
-# color_blue_case_p1:
-    # la $t7, COLOR1
-    # lw $t3, color_blue
-    # sw $t3, 0($t7)
-    # lw $t1, pre_color_blue
-    # j case_done_p1
-    
-# case_done_p1:
-    # addi $t2, $t0, 1500
-    # sw $t1, 0( $t2 )
+jr $ra
 
-
-# draw_pre_block2:
-    # li $v0, 42
-    # li $a0, 0               # set minimum
-    # li $a1, 3               # set maximum
-    # syscall
-    # # get a random number from [0,2] and store it in $a0
+draw_score_tens_place_1:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 100
     
-    # beq $a0, 0, color_red_case_p2      # If $a0 is 0, jump to color red case
-    # beq $a0, 1, color_yellow_case_p2   # If $a0 is 1, jump to color yellow case
-    # beq $a0, 2, color_blue_case_p2     # If $a0 is 2, jump to color blue case
-
-# color_red_case_p2:  
-    # la $t7, COLOR2
-    # lw $t3, color_red
-    # sw $t3, 0($t7)
-    # lw $t1, pre_color_red
-    # j case_done_p2
-
-# color_yellow_case_p2:
-    # la $t7, COLOR2
-    # lw $t3, color_yellow
-    # sw $t3, 0($t7)
-    # lw $t1, pre_color_yellow
-    # j case_done_p2
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 124
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
     
-# color_blue_case_p2:
-    # la $t7, COLOR2
-    # lw $t3, color_blue
-    # sw $t3, 0($t7)
-    # lw $t1, pre_color_blue
-    # j case_done_p2
+jr $ra
+
+draw_score_tens_place_2:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 100
     
-# case_done_p2:
-    # addi $t2, $t2, 4
-    # sw $t1, 0( $t2 )
-# jr $ra
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+    
+draw_score_tens_place_3:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 100
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+    
+draw_score_tens_place_4:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 100
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    
+jr $ra
+    
+draw_score_tens_place_5:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 100
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+
+jr $ra
+
+draw_score_tens_place_6:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 100
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+
+draw_score_tens_place_7:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 100
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    
+jr $ra
+
+draw_score_tens_place_8:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 100
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+
+draw_score_tens_place_9:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 100
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+    
+draw_score_unit_place_0:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 116
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+
+draw_score_unit_place_1:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 116
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 124
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+    
+draw_score_unit_place_2:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 116
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+    
+draw_score_unit_place_3:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 116
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+
+draw_score_unit_place_4:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 116
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    
+jr $ra
+
+draw_score_unit_place_5:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 116
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+
+draw_score_unit_place_6:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 116
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+    
+draw_score_unit_place_7:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 116
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    
+jr $ra
+    
+draw_score_unit_place_8:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 116
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
+    
+draw_score_unit_place_9:
+    lw $t0, ADDR_DSPL
+    addi $t2, $t0, 116
+    
+    li $t1, 0xD3D3D3
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 8
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 128
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 120
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    addi $t2, $t2, 4
+    sw $t1 0( $t2 )
+    
+jr $ra
 
     
 quit:
