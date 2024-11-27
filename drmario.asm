@@ -1099,54 +1099,64 @@ reset_block:
     li $t1, 13
     sw $t1, BLOCK_COL2
     
-    li $v0, 42
-    li $a0, 0               # set minimum
-    li $a1, 3               # set maximum
-    syscall
-    # get a random number from [0,2] and store it in $a0
     
-    beq $a0, 0, color_red_case1      # If $a0 is 0, jump to color red case
-    beq $a0, 1, color_yellow_case1   # If $a0 is 1, jump to color yellow case
-    beq $a0, 2, color_blue_case1     # If $a0 is 2, jump to color blue case
+    # li $v0, 42
+    # li $a0, 0               # set minimum
+    # li $a1, 3               # set maximum
+    # syscall
+    # # get a random number from [0,2] and store it in $a0
     
-    
-color_red_case1:
-    lw $t6, color_red               # store color red in $t6
-    j case_done1
-color_yellow_case1:
-    lw $t6, color_yellow            # store color yellow in $t6
-    j case_done1
-color_blue_case1:
-    lw $t6, color_blue              # store color blue in $t6
-    j case_done1
-    
-case_done1:
-    sw $t6, COLOR1
-    
-    
-    li $v0, 42
-    li $a0, 0               # set minimum
-    li $a1, 3               # set maximum
-    syscall
-    # get a random number from [0,2] and store it in $a0
-    
-    beq $a0, 0, color_red_case2      # If $a0 is 0, jump to color red case
-    beq $a0, 1, color_yellow_case2   # If $a0 is 1, jump to color yellow case
-    beq $a0, 2, color_blue_case2     # If $a0 is 2, jump to color blue case
-    
-    
-color_red_case2:  
-    lw $t6, color_red               # store color red in $t6
-    j case_done2
-color_yellow_case2:
-    lw $t6, color_yellow            # store color yellow in $t6
-    j case_done2
-color_blue_case2:
-    lw $t6, color_blue              # store color blue in $t6
-    j case_done2
+    # beq $a0, 0, color_red_case1      # If $a0 is 0, jump to color red case
+    # beq $a0, 1, color_yellow_case1   # If $a0 is 1, jump to color yellow case
+    # beq $a0, 2, color_blue_case1     # If $a0 is 2, jump to color blue case
 
-case_done2:
-    sw $t6, COLOR2
+    
+# color_red_case1:
+    # lw $t6, color_red               # store color red in $t6
+    # lw $t0, ADDR_DSPL
+    # addi $t2, $t0, 1500
+    # sw $t6, 0( $t2 )
+    # j case_done1
+# color_yellow_case1:
+    # lw $t6, color_yellow            # store color yellow in $t6
+    # lw $t0, ADDR_DSPL
+    # addi $t2, $t0, 1500
+    # sw $t6, 0( $t2 )
+    # j case_done1
+# color_blue_case1:
+    # lw $t6, color_blue              # store color blue in $t6
+    # lw $t0, ADDR_DSPL
+    # addi $t2, $t0, 1500
+    # sw $t6, 0( $t2 )
+    # j case_done1
+    
+# case_done1:
+    # sw $t6, COLOR1
+    
+    
+    # li $v0, 42
+    # li $a0, 0               # set minimum
+    # li $a1, 3               # set maximum
+    # syscall
+    # # get a random number from [0,2] and store it in $a0
+    
+    # beq $a0, 0, color_red_case2      # If $a0 is 0, jump to color red case
+    # beq $a0, 1, color_yellow_case2   # If $a0 is 1, jump to color yellow case
+    # beq $a0, 2, color_blue_case2     # If $a0 is 2, jump to color blue case
+    
+    
+# color_red_case2:  
+    # lw $t6, color_red               # store color red in $t6
+    # j case_done2
+# color_yellow_case2:
+    # lw $t6, color_yellow            # store color yellow in $t6
+    # j case_done2
+# color_blue_case2:
+    # lw $t6, color_blue              # store color blue in $t6
+    # j case_done2
+
+# case_done2:
+    # sw $t6, COLOR2
     
     
 #check for ending
@@ -1705,7 +1715,6 @@ jr $ra
 # case_done_p2:
     # addi $t2, $t2, 4
     # sw $t1, 0( $t2 )
-# jr $ra
 
     
 quit:
